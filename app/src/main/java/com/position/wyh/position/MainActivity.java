@@ -1,10 +1,16 @@
 package com.position.wyh.position;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -18,6 +24,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.position.wyh.position.test.ApiInvoleUtils;
 import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
+import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.viewpagerindicator.IconPagerAdapter;
 import com.position.wyh.position.viewpagerindicator.IconTabPageIndicator;
@@ -42,7 +49,18 @@ public class MainActivity extends FragmentActivity {
 
     private ViewPager mViewPager;
     private IconTabPageIndicator mIndicator;
-    private static String TAG="MainActivity";
+    private static String TAG = "MainActivity";
+    private int MSG_RECEIVED_CODE = 1000;
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == MSG_RECEIVED_CODE) {
+                String code = (String) msg.obj;
+                LogUtils.e("======", "======code:" + code);
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,9 +73,16 @@ public class MainActivity extends FragmentActivity {
         //连续启动Service
         Intent intentOne = new Intent(this, AutoClickService.class);
         startService(intentOne);
+
+        SmsObserver mObserver = new SmsObserver(this, mHandler, MSG_RECEIVED_CODE);
+        Uri uri = Uri.parse("content://sms");
+        getContentResolver().registerContentObserver(uri, true, mObserver);
+        //申请写的权限
+        String[] permissions = {Manifest.permission.READ_SMS};
+        if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            requestPermissions(permissions, 200);
+        }
     }
-
-
 
 
     private void initViews() {
@@ -70,7 +95,7 @@ public class MainActivity extends FragmentActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-               // taskPost();
+                // taskPost();
             }
         }).start();
     }
@@ -131,15 +156,14 @@ public class MainActivity extends FragmentActivity {
     }
 
 
-
     public void taskPost() {
 
         String cPUSerial = SettingFragment.getCPUSerial(this);
         String GetDiskId = SettingFragment.GetDiskId();
-        Log.e(TAG, "taskPost: 设备CPU号："+cPUSerial);
-        Log.e(TAG, "taskPost: 设备硬盘号："+GetDiskId);
+        Log.e(TAG, "taskPost: 设备CPU号：" + cPUSerial);
+        Log.e(TAG, "taskPost: 设备硬盘号：" + GetDiskId);
         String deviceNo = "d23eab596657293008bd9b9d75f935c62";
-        HashMap<String, Object> paramMap = new HashMap<String,Object>();
+        HashMap<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("deviceNo", deviceNo);
         paramMap.put("deviceCpu", cPUSerial);
         paramMap.put("deviceCaliche", GetDiskId);
@@ -150,7 +174,7 @@ public class MainActivity extends FragmentActivity {
         paramMap2.put("deviceNo", deviceNo);
         String s = OkHttpUtil.postSubmitFormsynchronization("http://47.242.140.225/api/order/getOrder?", paramMap2);
 
-        Log.e(TAG, "taskPost: "+s );
+        Log.e(TAG, "taskPost: " + s);
 
 
     }
