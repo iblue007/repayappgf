@@ -146,11 +146,11 @@ public class AutoClickService extends AccessibilityService {
             if (isClickQQ) {
                 isExists(getRootInActiveWindow(), "123", new onCallBack() {
                     @Override
-                    public void onCallBack() {
+                    public void onCallBack(Object object) {
                         final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
                         DFSPasswordLogin(rootInActiveWindow22, "q", "android.widget.TextView", "qq", new onCallBack() {
                             @Override
-                            public void onCallBack() {
+                            public void onCallBack(Object object) {
                                 isClickQQ = false;
                                 DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "123", 3, null);
                             }
@@ -171,25 +171,25 @@ public class AutoClickService extends AccessibilityService {
                         }
                         DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "请输入登录密码", 2, new onCallBack() {
                             @Override
-                            public void onCallBack() {
+                            public void onCallBack(Object object) {
 
                             }
                         });
                         if (is123) {
                             DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "ABC", 3, new onCallBack() {
                                 @Override
-                                public void onCallBack() {
+                                public void onCallBack(Object object) {
                                     is123 = false;
                                 }
                             });
                         }
                         isExists(getRootInActiveWindow(), "ABC", new onCallBack() {
                             @Override
-                            public void onCallBack() {
+                            public void onCallBack(Object object) {
                                 if (isPwd && !isClickQQ) {
                                     DFSPasswordLogin(rootInActiveWindow, "1", "android.widget.TextView", "202006", new onCallBack() {
                                         @Override
-                                        public void onCallBack() {
+                                        public void onCallBack(Object object) {
                                             isPwd = false;
                                             DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "完成", 3, null);
                                         }
@@ -282,7 +282,7 @@ public class AutoClickService extends AccessibilityService {
                     }
                     this.state = State.Login;
                     if (onCallBack != null) {
-                        onCallBack.onCallBack();
+                        onCallBack.onCallBack(flag);
                     }
                     ztLog("===state=== found" + this.state + this.orderScore);
                     return;
@@ -350,7 +350,7 @@ public class AutoClickService extends AccessibilityService {
                     performClickExt(accessibilityNodeInfo.getParent(), str2, true);
                     this.state = State.Login;
                     if (onCallBack != null) {
-                        onCallBack.onCallBack();
+                        onCallBack.onCallBack(-1);
                     }
                     ztLog("===state=== found" + this.state + this.orderScore + "-String:" + accessibilityNodeInfo.getText().toString());
                     return;
@@ -936,7 +936,7 @@ public class AutoClickService extends AccessibilityService {
                 if (accessibilityNodeInfo.getText().toString().equals(str)) {
                     ztLog("===state=== found" + this.state + this.orderScore + "-String:" + accessibilityNodeInfo.getText().toString());
                     if (onCallBack != null) {
-                        onCallBack.onCallBack();
+                        onCallBack.onCallBack(-1);
                     }
                     return;
                 }
