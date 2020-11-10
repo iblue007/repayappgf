@@ -1,6 +1,5 @@
 package com.position.wyh.position;
 
-import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.content.Context;
@@ -8,17 +7,16 @@ import android.content.SharedPreferences;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
+import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.utlis.onCallBack;
 import com.position.wyh.position.utlis.testUtil;
@@ -40,14 +38,13 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AutoClickService extends AccessibilityService {
+public class AutoClickService extends AccessibilityServiceBase {
     private static final String TAG = "GK";
     String bankAccount = "";
     String bankCardNo = "";
     int durings = 0;
     String lastTradeNo = "";
-    BigDecimal orderScore = BigDecimal.valueOf(0L);
-    public State state = State.Main;
+
     TimerTask task = new TimerTask() {
         /* class com.position.wyh.position.AutoClickService.AnonymousClass1 */
 
@@ -96,14 +93,6 @@ public class AutoClickService extends AccessibilityService {
     public void onInterrupt() {
     }
 
-    /* access modifiers changed from: private */
-    public void Sleep(int i) {
-        try {
-            Thread.sleep((long) i);
-        } catch (Exception unused) {
-        }
-    }
-
     /* access modifiers changed from: protected */
     public void onServiceConnected() {
         super.onServiceConnected();
@@ -143,7 +132,8 @@ public class AutoClickService extends AccessibilityService {
 
         testUtil.test(eventType);
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
-            if (isClickQQ) {
+            state = State.Login;
+            if (isClickQQ && state == State.Login) {
                 isExists(getRootInActiveWindow(), "123", new onCallBack() {
                     @Override
                     public void onCallBack(Object object) {
@@ -160,98 +150,103 @@ public class AutoClickService extends AccessibilityService {
             }
             if (eventType == 32 || eventType == 4096) {//TYPE_WINDOW_STATE_CHANGED:32
                 //  ztLog("===start search=== " + charSequence + " " + charSequence2);
+                final AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
                 try {
-                    final AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
-
-                    if (rootInActiveWindow != null) {
-                        DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "手机号/身份证号", 1, null);
-                        try {
-                            Thread.sleep(300);
-                        } catch (Exception unused) {
-                        }
-                        DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "请输入登录密码", 2, new onCallBack() {
-                            @Override
-                            public void onCallBack(Object object) {
-
+                    if (state == State.Login) {
+                        if (rootInActiveWindow != null) {
+                            DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "手机号/身份证号", 1, null);
+                            try {
+                                Thread.sleep(300);
+                            } catch (Exception unused) {
                             }
-                        });
-                        if (is123) {
-                            DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "ABC", 3, new onCallBack() {
+                            DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "请输入登录密码", 2, new onCallBack() {
                                 @Override
                                 public void onCallBack(Object object) {
-                                    is123 = false;
+
                                 }
                             });
-                        }
-                        isExists(getRootInActiveWindow(), "ABC", new onCallBack() {
-                            @Override
-                            public void onCallBack(Object object) {
-                                if (isPwd && !isClickQQ) {
-                                    DFSPasswordLogin(rootInActiveWindow, "1", "android.widget.TextView", "202006", new onCallBack() {
-                                        @Override
-                                        public void onCallBack(Object object) {
-                                            isPwd = false;
-                                            DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "完成", 3, null);
-                                        }
-                                    });
-                                }
-
+                            if (is123) {
+                                DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "ABC", 3, new onCallBack() {
+                                    @Override
+                                    public void onCallBack(Object object) {
+                                        is123 = false;
+                                    }
+                                });
                             }
-                        });
-                        ztLog("===state=== 11changed" + this.state);
+                            isExists(getRootInActiveWindow(), "ABC", new onCallBack() {
+                                @Override
+                                public void onCallBack(Object object) {
+                                    if (isPwd && !isClickQQ) {
+                                        DFSPasswordLogin(rootInActiveWindow, "1", "android.widget.TextView", "202006", new onCallBack() {
+                                            @Override
+                                            public void onCallBack(Object object) {
+                                                isPwd = false;
+                                                DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "完成", 3, new onCallBack() {
+                                                    @Override
+                                                    public void onCallBack(Object object) {
+                                                        state = State.Main;
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+
+                                }
+                            });
+                            ztLog("===state=== 11changed" + this.state);
+                        }
+                    } else {
+                        if (rootInActiveWindow != null) {
+                            DFSExt(rootInActiveWindow, "android.widget.TextView", "转账汇款");
+                            ztLog("===state=== 11changed" + this.state);
+                        }
+                        ztLog("===state=== " + this.state + this.orderScore);
+                        try {
+                            Thread.sleep(500);
+                        } catch (Exception unused) {
+                        }
+                        DFSWebView(accessibilityEvent.getSource(), "android.view.View", "银行卡转账");
+                        ztLog("===state=== 22" + this.state + this.orderScore);
+                        try {
+                            Thread.sleep(500);
+                        } catch (Exception unused2) {
+                        }
+                        DFSbank(accessibilityEvent.getSource(), "android.widget.EditText", "请输入收款人姓名");
+                        Thread.sleep(500);
+                        DFSSMB(accessibilityEvent.getSource(), "android.view.View", "获取验证码");
+                        ztLog("===state=== 22" + this.state + this.orderScore);
+                        Sleep(500);
+                        AccessibilityNodeInfo rootInActiveWindow2 = getRootInActiveWindow();
+                        String string = getSharedPreferences("setting", 0).getString("Password", "");
+                        ztLog("pwd:" + string);
+                        DFSPassword(rootInActiveWindow2, "android.widget.TextView", string);
+                        if (this.state == State.Password) {
+                            try {
+                                Thread.sleep(500);
+                            } catch (Exception unused3) {
+                            }
+                            performBackClick();
+                            try {
+                                Thread.sleep(500);
+                            } catch (Exception unused4) {
+                            }
+                            performBackClick();
+                            try {
+                                Thread.sleep(500);
+                            } catch (Exception unused5) {
+                            }
+                            performBackClick();
+                            this.state = State.Main;
+                            new Thread() {
+                                /* class com.position.wyh.position.AutoClickService.AnonymousClass2 */
+
+                                public void run() {
+                                    AutoClickService.this.deviceNoftify();
+                                    AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
+                                }
+                            }.start();
+                        }
                     }
-
-
-//                if (rootInActiveWindow != null) {
-//                    DFSExt(rootInActiveWindow, "android.widget.TextView", "转账汇款");
-//                    ztLog("===state=== 11changed" + this.state);
-//                }
-//                ztLog("===state=== " + this.state + this.orderScore);
-//                try {
-//                    Thread.sleep(500);
-//                } catch (Exception unused) {
-//                }
-//                DFSWebView(accessibilityEvent.getSource(), "android.view.View", "银行卡转账");
-//                ztLog("===state=== 22" + this.state + this.orderScore);
-//                try {
-//                    Thread.sleep(500);
-//                } catch (Exception unused2) {
-//                }
-//                DFSbank(accessibilityEvent.getSource(), "android.widget.EditText", "请输入收款人姓名");
-//                Thread.sleep(500);
-//                DFSSMB(accessibilityEvent.getSource(), "android.view.View", "获取验证码");
-//                ztLog("===state=== 22" + this.state + this.orderScore);
-//                Sleep(500);
-//                AccessibilityNodeInfo rootInActiveWindow2 = getRootInActiveWindow();
-//                String string = getSharedPreferences("setting", 0).getString("Password", "");
-//                ztLog("pwd:" + string);
-//                DFSPassword(rootInActiveWindow2, "android.widget.TextView", string);
-//                if (this.state == State.Password) {
-//                    try {
-//                        Thread.sleep(500);
-//                    } catch (Exception unused3) {
-//                    }
-//                    performBackClick();
-//                    try {
-//                        Thread.sleep(500);
-//                    } catch (Exception unused4) {
-//                    }
-//                    performBackClick();
-//                    try {
-//                        Thread.sleep(500);
-//                    } catch (Exception unused5) {
-//                    }
-//                    performBackClick();
-//                    this.state = State.Main;
-//                    new Thread() {
-//                        /* class com.position.wyh.position.AutoClickService.AnonymousClass2 */
-//
-//                        public void run() {
-//                            AutoClickService.this.deviceNoftify();
-//                            AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
-//                        }
-//                    }.start();
-//                }
                 } catch (Exception e) {
                     ztLog("Exception1:" + e.getMessage());
                 }
@@ -259,41 +254,6 @@ public class AutoClickService extends AccessibilityService {
             //  ztLog("===end search=== " + charSequence + " " + charSequence2);
         }
 
-    }
-
-
-    private void DFSExtLogin(AccessibilityNodeInfo accessibilityNodeInfo, String str, String str2, int flag, onCallBack onCallBack) {
-        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
-            ztLog("rootInfo = class" + accessibilityNodeInfo.getClassName().toString());
-            if (accessibilityNodeInfo.getText() != null) {
-                ztLog("rootInfo = text " + accessibilityNodeInfo.getText().toString());
-                ztLog("rootInfo = text " + accessibilityNodeInfo);
-            }
-            if (accessibilityNodeInfo.getClassName().equals(str) && accessibilityNodeInfo.getText() != null) {
-                ztLog("rootInfo=1 " + accessibilityNodeInfo.getText().toString());
-                if (accessibilityNodeInfo.getText().toString().equals(str2)) {
-                    if (flag == 1) {
-                        performInput(accessibilityNodeInfo, "13692255330");//13692255330
-                    } else if (flag == 2) {
-                        performClick(accessibilityNodeInfo);
-                    } else if (flag == 3) {
-                        // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
-                        performClickExt(accessibilityNodeInfo.getParent(), str2, false);
-                    }
-                    this.state = State.Login;
-                    if (onCallBack != null) {
-                        onCallBack.onCallBack(flag);
-                    }
-                    ztLog("===state=== found" + this.state + this.orderScore);
-                    return;
-                } else {
-
-                }
-            }
-            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
-                DFSExtLogin(accessibilityNodeInfo.getChild(i), str, str2, flag, onCallBack);
-            }
-        }
     }
 
 
@@ -346,7 +306,7 @@ public class AutoClickService extends AccessibilityService {
                 ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString() + "-str2:" + str2);
 
                 if (accessibilityNodeInfo.getText().toString().equals(flag)) {
-                    Log.e("======", "======1111111111");
+                    LogUtils.e("======", "======1111111111");
                     performClickExt(accessibilityNodeInfo.getParent(), str2, true);
                     this.state = State.Login;
                     if (onCallBack != null) {
@@ -356,7 +316,7 @@ public class AutoClickService extends AccessibilityService {
                     return;
                 }
             }
-            Log.e("======", "======22222222222");
+            LogUtils.e("======", "======22222222222");
             for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
                 DFSPasswordLogin(accessibilityNodeInfo.getChild(i), flag, str, str2, onCallBack);
             }
@@ -527,105 +487,6 @@ public class AutoClickService extends AccessibilityService {
         }
     }
 
-    private void performClick(AccessibilityNodeInfo accessibilityNodeInfo) {
-        accessibilityNodeInfo.performAction(16);
-    }
-
-    @RequiresApi(api = 24)
-    private void performClickExt(AccessibilityNodeInfo accessibilityNodeInfo) {
-        Rect rect = new Rect();
-        accessibilityNodeInfo.getBoundsInScreen(rect);
-        Log.d("GK", "printTree: bound:" + rect);
-        Point point = new Point(rect.left + 10, rect.top + 10);
-        GestureDescription.Builder builder = new GestureDescription.Builder();
-        Path path = new Path();
-        path.moveTo((float) point.x, (float) point.y);
-        builder.addStroke(new GestureDescription.StrokeDescription(path, 0, 100));
-        dispatchGesture(builder.build(), new GestureResultCallback() {
-            /* class com.position.wyh.position.AutoClickService.AnonymousClass3 */
-
-            public void onCompleted(GestureDescription gestureDescription) {
-                super.onCompleted(gestureDescription);
-                Log.d("GK", "onCompleted: 完成..........");
-            }
-
-            public void onCancelled(GestureDescription gestureDescription) {
-                super.onCancelled(gestureDescription);
-                Log.d("GK", "onCompleted: 取消..........");
-            }
-        }, null);
-    }
-
-    @RequiresApi(api = 24)
-    private void performClickExt(AccessibilityNodeInfo accessibilityNodeInfo, String str, boolean doFor) {
-        Rect rect = new Rect();
-        accessibilityNodeInfo.getBoundsInScreen(rect);
-        Log.d("GK", "printTree: bound:" + rect + " " + rect.height() + " " + rect.width());
-        int height = rect.height() / 4;
-        int width = rect.width() / 3;
-        if (doFor) {
-            for (int i = 0; i < str.length(); i++) {
-                onGestureLogin(accessibilityNodeInfo, str.charAt(i) + "");
-            }
-        } else {
-            onGestureLogin(accessibilityNodeInfo, str);
-        }
-    }
-
-    private void onGestureLogin(AccessibilityNodeInfo accessibilityNodeInfo, String str) {
-        Point GetPasswordNumPoint = GetPasswordNumPoint(accessibilityNodeInfo, str);
-        StringBuilder sb = new StringBuilder();
-        sb.append("printTree: num:");
-        sb.append(str + "-0");
-        sb.append("position");
-        sb.append(GetPasswordNumPoint);
-        Log.d("======GK", "====" + sb.toString());
-        GestureDescription.Builder builder = new GestureDescription.Builder();
-        Path path = new Path();
-        path.moveTo((float) GetPasswordNumPoint.x, (float) GetPasswordNumPoint.y);
-        builder.addStroke(new GestureDescription.StrokeDescription(path, 0, 100));
-        dispatchGesture(builder.build(), new GestureResultCallback() {
-            /* class com.position.wyh.position.AutoClickService.AnonymousClass4 */
-
-            public void onCompleted(GestureDescription gestureDescription) {
-                super.onCompleted(gestureDescription);
-                Log.d("GK", "onCompleted: 完成..........");
-            }
-
-            public void onCancelled(GestureDescription gestureDescription) {
-                super.onCancelled(gestureDescription);
-                Log.d("GK", "onCompleted: 取消..........");
-            }
-        }, null);
-        try {
-            Thread.sleep(300);
-        } catch (Exception unused) {
-        }
-    }
-
-    private Point GetPasswordNumPoint(AccessibilityNodeInfo accessibilityNodeInfo, String c) {
-        for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
-            if (!(accessibilityNodeInfo.getChild(i) == null || accessibilityNodeInfo.getChild(i).getText() == null)) {
-                Log.d("GK", "targetInfo.getChild(i) " + ((Object) accessibilityNodeInfo.getChild(i).getText()) + " c: " + c);
-                Log.e("====", "=====:" + accessibilityNodeInfo.getChild(i).getText());
-                if (accessibilityNodeInfo.getChild(i).getText().equals(c)) {
-                    Rect rect = new Rect();
-                    accessibilityNodeInfo.getChild(i).getBoundsInScreen(rect);
-                    Log.d("GK", "targetInfo.getChild(i)" + rect);
-                    return new Point((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
-                }
-            }
-        }
-        return new Point(0, 0);
-    }
-
-    private void performInput(AccessibilityNodeInfo accessibilityNodeInfo, CharSequence charSequence) {
-        Bundle bundle = new Bundle();
-        bundle.putCharSequence("ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE", charSequence);
-        accessibilityNodeInfo.performAction(1);
-        accessibilityNodeInfo.performAction(2097152, bundle);
-    }
-
     public void performBackClick() {
         try {
             Thread.sleep(500);
@@ -641,8 +502,8 @@ public class AutoClickService extends AccessibilityService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Log.d("GK", "performTaskClick：");
-//        performGlobalAction(3);
+        LogUtils.d("GK", "performTaskClick：");
+        performGlobalAction(3);
     }
 
     public void performScrollBackward() {
@@ -664,24 +525,12 @@ public class AutoClickService extends AccessibilityService {
         performGlobalAction(4096);
     }
 
-    /* access modifiers changed from: private */
-    public void ztLog(String str) {
-        ztLog(str, false);
-    }
-
-    private void ztLog(String str, boolean z) {
-        Log.i("GK", str);
-        if (z) {
-            Toast.makeText(this, str, Toast.LENGTH_LONG).show();
-        }
-    }
-
     public static void startAlipay(Context context) {
         try {
             Runtime.getRuntime().exec("adb shell am start com.eg.android.AlipayGphone/com.eg.android.AlipayGphone.AlipayLogin");
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("GK", e.getMessage());
+            LogUtils.e("GK", e.getMessage());
         }
     }
 
@@ -692,24 +541,24 @@ public class AutoClickService extends AccessibilityService {
             outputStream.flush();
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("GK", e.getMessage());
+            LogUtils.e("GK", e.getMessage());
         }
     }
 
     public static void enterForestUI(AccessibilityNodeInfo accessibilityNodeInfo) {
-        Log.d("GK", "enterForestUI ");
+        LogUtils.d("GK", "enterForestUI ");
         if (accessibilityNodeInfo != null) {
             List<AccessibilityNodeInfo> findAccessibilityNodeInfosByText = accessibilityNodeInfo.findAccessibilityNodeInfosByText("转账");
             if (findAccessibilityNodeInfosByText == null) {
-                Log.d("GK", "enterForestUI finding no");
+                LogUtils.d("GK", "enterForestUI finding no");
                 return;
             }
-            Log.d("GK", "enterForestUI finding yes");
+            LogUtils.d("GK", "enterForestUI finding yes");
             for (AccessibilityNodeInfo accessibilityNodeInfo2 : findAccessibilityNodeInfosByText) {
                 AccessibilityNodeInfo parent = accessibilityNodeInfo2.getParent();
                 if (parent != null && parent.isClickable()) {
                     parent.performAction(16);
-                    Log.d("GK", "item = " + accessibilityNodeInfo2.toString() + ", parent click = " + parent.toString());
+                    LogUtils.d("GK", "item = " + accessibilityNodeInfo2.toString() + ", parent click = " + parent.toString());
                     return;
                 }
             }
@@ -725,31 +574,31 @@ public class AutoClickService extends AccessibilityService {
                 AccessibilityNodeInfo child = accessibilityNodeInfo.getChild(i);
                 ztLog("rootInfo=" + child);
                 if ("com.uc.webview.export.WebView".equals(child.getClassName())) {
-                    Log.d("GK", "找到蚂蚁森林的 webView count = " + child.getChildCount());
+                    LogUtils.d("GK", "找到蚂蚁森林的 webView count = " + child.getChildCount());
                     ztLog("rootInfo=" + child.getChild(0));
                     findEveryViewNode(child.getChild(0));
                     return;
                 }
             }
         } else {
-            Log.d("GK", "alipayPolicy = null");
+            LogUtils.d("GK", "alipayPolicy = null");
         }
     }
 
     @RequiresApi(api = 18)
     public static void findEveryViewNode(AccessibilityNodeInfo accessibilityNodeInfo) {
         if (accessibilityNodeInfo != null && accessibilityNodeInfo.getChildCount() > 0) {
-            Log.d("GK", "findEveryViewNode = " + accessibilityNodeInfo.toString() + " " + accessibilityNodeInfo.getClassName().toString());
+            LogUtils.d("GK", "findEveryViewNode = " + accessibilityNodeInfo.toString() + " " + accessibilityNodeInfo.getClassName().toString());
             for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
                 AccessibilityNodeInfo child = accessibilityNodeInfo.getChild(i);
                 if (child != null) {
                     if ("android.widget.Button".equals(child.getClassName().toString())) {
-                        Log.d("GK", "Button 的节点数据 text = " + ((Object) child.getText()) + ", descript = " + ((Object) child.getContentDescription()) + ", className = " + ((Object) child.getClassName()) + ", resId = " + child.getViewIdResourceName());
+                        LogUtils.d("GK", "Button 的节点数据 text = " + ((Object) child.getText()) + ", descript = " + ((Object) child.getContentDescription()) + ", className = " + ((Object) child.getClassName()) + ", resId = " + child.getViewIdResourceName());
                         boolean isClickable = child.isClickable();
                         boolean z = child.getViewIdResourceName() == null;
                         if (isClickable && z) {
                             child.performAction(16);
-                            Log.d("GK", "能量球 成功点击");
+                            LogUtils.d("GK", "能量球 成功点击");
                         }
                     }
                     findEveryViewNode(child);
@@ -772,7 +621,7 @@ public class AutoClickService extends AccessibilityService {
         //String paramsStr = StringUtils.ascriAsc(paramMap);
         String paramsStr = StringUtils.ascriAsc(paramMap);
 
-        Log.e(TAG, "taskPost: " + paramsStr);
+        LogUtils.e(TAG, "taskPost: " + paramsStr);
         HashMap<String, String> paramMap2 = new HashMap<>();
         String sign = Md5Util.MD5Encode(paramsStr);
         paramMap2.put("sign", sign);
@@ -781,7 +630,7 @@ public class AutoClickService extends AccessibilityService {
         String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/getOrder?", paramMap2);
         // Log.e(TAG, "taskPost: "+s );
         //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
-        Log.e(TAG, "taskPost: " + s);
+        LogUtils.e(TAG, "taskPost: " + s);
         handle(s);
 
 
@@ -799,7 +648,7 @@ public class AutoClickService extends AccessibilityService {
         String hash = Md5Utils.hash(StringsUtils.sortMapByKeyAsc(hashMap));
         try {
             HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("http://" + sharedPreferences.getString("IP", "") + "//api//order//getOrder").openConnection();
-            Log.d("GK", "HttpURLConnection = " + httpURLConnection);
+            LogUtils.d("GK", "HttpURLConnection = " + httpURLConnection);
             httpURLConnection.setConnectTimeout(5000);
             httpURLConnection.setRequestMethod("POST");
             StringBuffer stringBuffer = new StringBuffer();
@@ -808,7 +657,7 @@ public class AutoClickService extends AccessibilityService {
             httpURLConnection.setRequestProperty("Content-Length", str.length() + "");
             httpURLConnection.setDoOutput(true);
             httpURLConnection.getOutputStream().write(str.getBytes());
-            Log.d("GK", "data = " + str);
+            LogUtils.d("GK", "data = " + str);
             int responseCode = httpURLConnection.getResponseCode();
             if (responseCode == 200) {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream(), "UTF-8"));
@@ -822,7 +671,7 @@ public class AutoClickService extends AccessibilityService {
                 }
                 bufferedReader.close();
                 String stringBuffer2 = stringBuffer.toString();
-                Log.d("GK", "result = " + stringBuffer2);
+                LogUtils.d("GK", "result = " + stringBuffer2);
                 try {
                     handle(stringBuffer2);
                 } catch (Exception e) {
@@ -830,7 +679,7 @@ public class AutoClickService extends AccessibilityService {
                 }
                 return null;
             }
-            Log.d("GK", "responseCode = " + responseCode);
+            LogUtils.d("GK", "responseCode = " + responseCode);
             return null;
         } catch (MalformedURLException e2) {
             e2.printStackTrace();
@@ -851,18 +700,18 @@ public class AutoClickService extends AccessibilityService {
             JSONObject jSONObject = parseObject.getJSONObject("data");
             if (!jSONObject.isEmpty()) {
                 this.tradeNo = jSONObject.getString("tradeNo");
-                Log.d("GK", "result tradeNo = " + this.tradeNo);
+                LogUtils.d("GK", "result tradeNo = " + this.tradeNo);
                 jSONObject.getString("bankName");
                 jSONObject.getString("bankCode");
                 this.bankAccount = jSONObject.getString("bankAccount");
-                Log.d("GK", "result bankAccount = " + this.bankAccount);
+                LogUtils.d("GK", "result bankAccount = " + this.bankAccount);
                 this.bankCardNo = jSONObject.getString("bankCardNo");
-                Log.d("GK", "result bankCardNo = " + this.bankCardNo);
+                LogUtils.d("GK", "result bankCardNo = " + this.bankCardNo);
                 jSONObject.getString("subbranchName");
                 jSONObject.getString("subbranchProvince");
                 jSONObject.getString("subbranchCity");
                 this.orderScore = jSONObject.getBigDecimal("orderScore");
-                Log.d("GK", "result orderScore = " + this.orderScore);
+                LogUtils.d("GK", "result orderScore = " + this.orderScore);
             } else {
                 ztLog("task code =   " + intValue);
             }
