@@ -113,6 +113,24 @@ public class AccessibilityServiceBase extends AccessibilityService {
         }
     }
 
+    protected void isExists(AccessibilityNodeInfo accessibilityNodeInfo, String str, onCallBack onCallBack) {
+        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
+            if (accessibilityNodeInfo.getText() != null) {
+                ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString());
+                if (accessibilityNodeInfo.getText().toString().equals(str)) {
+                    ztLog("===state=== found" + this.state + this.orderScore + "-String:" + accessibilityNodeInfo.getText().toString());
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(-1);
+                    }
+                    return;
+                }
+            }
+            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
+                isExists(accessibilityNodeInfo.getChild(i), str, onCallBack);
+            }
+        }
+    }
+
     @RequiresApi(api = 24)
     protected void performClickExt(AccessibilityNodeInfo accessibilityNodeInfo, String str, boolean doFor) {
         Rect rect = new Rect();
