@@ -3,6 +3,7 @@ package com.position.wyh.position;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -22,8 +23,9 @@ public class knowledgeFragment extends BaseFragment {
 
     private Button mButton_start;
     private Button mButton_assit;
-    private static String TAG="MainActivity";
-    public static boolean started =false;
+    private static String TAG = "MainActivity";
+    public static boolean started = false;
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.knowledge_fragment, null, false);
@@ -31,17 +33,13 @@ public class knowledgeFragment extends BaseFragment {
         return view;
     }
 
-    void initView(View view)
-    {
+    void initView(View view) {
         mButton_start = view.findViewById(R.id.button_start);
         mButton_assit = view.findViewById(R.id.button_assit);
-        if(started)
-        {
+        if (started) {
 
             mButton_start.setText("停止自动化测试");
-        }
-        else
-        {
+        } else {
             mButton_start.setText("开始自动化测试");
         }
         //点击事件
@@ -50,13 +48,23 @@ public class knowledgeFragment extends BaseFragment {
             public void onClick(View v) {
                 started = !started;
 
-                if(started)
-                {
+                if (started) {
                     //Toast.makeText(getActivity(),"启动成功！",Toast.LENGTH_SHORT).show();
                     mButton_start.setText("停止自动化测试");
-                }
-                else
-                {
+                    try {
+                        PackageManager packageManager = getContext().getPackageManager();
+                        Intent intent = new Intent();
+                        intent = packageManager.getLaunchIntentForPackage("cmb.pb");
+                        if (intent == null) {
+                            Toast.makeText(getContext(), "未安装", Toast.LENGTH_LONG).show();
+                        } else {
+                            startActivity(intent);
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
                     mButton_start.setText("开始自动化测试");
                 }
             }
@@ -68,13 +76,11 @@ public class knowledgeFragment extends BaseFragment {
             public void onClick(View v) {
 
                 //如果没开启，就提醒开启辅助功能
-                if(!isAccessibilitySettingsOn(getContext())){
-                    Intent intent=new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                if (!isAccessibilitySettingsOn(getContext())) {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
                     startActivity(intent);
-                }
-                else
-                {
-                    Toast.makeText(getActivity(),"辅助功能已经开启！",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getActivity(), "辅助功能已经开启！", Toast.LENGTH_SHORT).show();
                 }
 
 

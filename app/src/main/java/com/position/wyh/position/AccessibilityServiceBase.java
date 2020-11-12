@@ -21,6 +21,8 @@ public class AccessibilityServiceBase extends AccessibilityService {
 
     public AutoClickService.State state = AutoClickService.State.Main;
     public BigDecimal orderScore = BigDecimal.valueOf(0L);
+    public static int CARINT_ZHAOSHAN = 0;//0 招商
+    public static int CATINT = 0;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -31,6 +33,36 @@ public class AccessibilityServiceBase extends AccessibilityService {
     public void onInterrupt() {
 
     }
+
+
+    protected void findViewByNameAndClickParent(AccessibilityNodeInfo accessibilityNodeInfo, String str2, int flag, onCallBack onCallBack) {
+        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
+            if (accessibilityNodeInfo.getText() != null) {
+                ztLog("rootInfo=1 " + accessibilityNodeInfo.getText().toString());
+                if (accessibilityNodeInfo.getText().toString().equals(str2)) {
+                    if (flag == 1) {
+                        performInput(accessibilityNodeInfo, "13692255330");//13692255330
+                    } else if (flag == 2) {
+                        performClick(accessibilityNodeInfo.getParent());
+                    } else if (flag == 3) {
+                        // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
+                        performClickExt(accessibilityNodeInfo.getParent(), str2, false);
+                    }
+                    this.state = AutoClickService.State.Login;
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(flag);
+                    }
+                    return;
+                } else {
+
+                }
+            }
+            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
+                findViewByNameAndClickParent(accessibilityNodeInfo.getChild(i), str2, flag, onCallBack);
+            }
+        }
+    }
+
 
     protected void DFSExtLogin(AccessibilityNodeInfo accessibilityNodeInfo, String str, String str2, int flag, onCallBack onCallBack) {
         if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {

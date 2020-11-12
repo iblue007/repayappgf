@@ -1,12 +1,8 @@
 package com.position.wyh.position;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.accessibilityservice.GestureDescription;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Path;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
@@ -16,6 +12,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.alibaba.fastjson.JSONObject;
 import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
+import com.position.wyh.position.utlis.Global;
 import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.utlis.onCallBack;
@@ -50,27 +47,27 @@ public class AutoClickService extends AccessibilityServiceBase {
 
         public void run() {
             try {
-                AutoClickService.this.ztLog("===TimerTask=== " + AutoClickService.this.orderScore + " " + knowledgeFragment.started + " tradeNo " + AutoClickService.this.tradeNo + " lastTradeNo " + AutoClickService.this.lastTradeNo + " durings " + AutoClickService.this.durings);
-                if (AutoClickService.this.orderScore == BigDecimal.valueOf(0L) && knowledgeFragment.started) {
-                    AutoClickService.this.ztLog("===TimerTask===11 " + AutoClickService.this.orderScore + " " + knowledgeFragment.started);
-                    AutoClickService.this.taskPost();
-                    AutoClickService.this.performTaskClick();
-                    AutoClickService.this.Sleep(200);
-                    AutoClickService.this.performTaskClick();
-                    AutoClickService.this.lastTradeNo = AutoClickService.this.tradeNo;
-                    AutoClickService.this.durings = 0;
-                } else if (AutoClickService.this.tradeNo.equals(AutoClickService.this.lastTradeNo) && knowledgeFragment.started) {
-                    AutoClickService.this.durings++;
-                }
-                if (AutoClickService.this.durings >= 3) {
-                    AutoClickService.this.performTaskClick();
-                    AutoClickService.this.Sleep(200);
-                    AutoClickService.this.performTaskClick();
-                    AutoClickService.this.durings = 0;
-                }
-                if (!knowledgeFragment.started) {
-                    AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
-                }
+//                AutoClickService.this.ztLog("===TimerTask=== " + AutoClickService.this.orderScore + " " + knowledgeFragment.started + " tradeNo " + AutoClickService.this.tradeNo + " lastTradeNo " + AutoClickService.this.lastTradeNo + " durings " + AutoClickService.this.durings);
+//                if (AutoClickService.this.orderScore == BigDecimal.valueOf(0L) && knowledgeFragment.started) {
+//                    AutoClickService.this.ztLog("===TimerTask===11 " + AutoClickService.this.orderScore + " " + knowledgeFragment.started);
+//                    AutoClickService.this.taskPost();
+//                    AutoClickService.this.performTaskClick();
+//                    AutoClickService.this.Sleep(200);
+//                    AutoClickService.this.performTaskClick();
+//                    AutoClickService.this.lastTradeNo = AutoClickService.this.tradeNo;
+//                    AutoClickService.this.durings = 0;
+//                } else if (AutoClickService.this.tradeNo.equals(AutoClickService.this.lastTradeNo) && knowledgeFragment.started) {
+//                    AutoClickService.this.durings++;
+//                }
+//                if (AutoClickService.this.durings >= 3) {
+//                    AutoClickService.this.performTaskClick();
+//                    AutoClickService.this.Sleep(200);
+//                    AutoClickService.this.performTaskClick();
+//                    AutoClickService.this.durings = 0;
+//                }
+//                if (!knowledgeFragment.started) {
+//                    AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -99,7 +96,7 @@ public class AutoClickService extends AccessibilityServiceBase {
         AccessibilityServiceInfo accessibilityServiceInfo = new AccessibilityServiceInfo();
         accessibilityServiceInfo.eventTypes = -1;
         accessibilityServiceInfo.feedbackType = 16;
-        accessibilityServiceInfo.packageNames = new String[]{"com.gotokeep.keep", "com.cgbchina.xpt", "com.sinovatech.unicom.ui", "com.tencent.mm"};
+        accessibilityServiceInfo.packageNames = new String[]{"com.gotokeep.keep", "com.cgbchina.xpt", "com.sinovatech.unicom.ui", "com.tencent.mm", "cmb.pb"};
         accessibilityServiceInfo.notificationTimeout = 100;
         accessibilityServiceInfo.flags |= 8;
         setServiceInfo(accessibilityServiceInfo);
@@ -129,128 +126,198 @@ public class AutoClickService extends AccessibilityServiceBase {
         int eventType = accessibilityEvent.getEventType();
         String charSequence = accessibilityEvent.getPackageName().toString();
         String charSequence2 = accessibilityEvent.getClassName().toString();
-
+        final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
         testUtil.test(eventType);
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
-            state = State.Login;
-            if (isClickQQ && state == State.Login) {
-                isExists(getRootInActiveWindow(), "123", new onCallBack() {
-                    @Override
-                    public void onCallBack(Object object) {
-                        final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
-                        DFSPasswordLogin(rootInActiveWindow22, "q", "android.widget.TextView", "qq", new onCallBack() {
-                            @Override
-                            public void onCallBack(Object object) {
-                                isClickQQ = false;
-                                DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "123", 3, null);
-                            }
-                        });
-                    }
-                });
-            }
-            if (eventType == 32 || eventType == 4096) {//TYPE_WINDOW_STATE_CHANGED:32
-                //  ztLog("===start search=== " + charSequence + " " + charSequence2);
-                final AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
-                try {
-                    if (state == State.Login) {
-                        if (rootInActiveWindow != null) {
-                            DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "手机号/身份证号", 1, null);
-                            try {
-                                Thread.sleep(300);
-                            } catch (Exception unused) {
-                            }
-                            DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "请输入登录密码", 2, new onCallBack() {
+            if (AccessibilityServiceBase.CATINT == AccessibilityServiceBase.CARINT_ZHAOSHAN) {
+//                if (state == State.Main) {
+//                    findViewByNameAndAction(rootInActiveWindow22, "我的", 2, new onCallBack() {
+//                        @Override
+//                        public void onCallBack(Object object) {
+//                            Sleep(3000);
+//                            state = State.Login;
+//                            LogUtils.e("======", "======完成d点击我的~~~");
+//                        }
+//                    });
+//                } else if (state == State.Login) {
+//                    isExists(rootInActiveWindow22, "请输入密码", new onCallBack() {
+//                        @Override
+//                        public void onCallBack(Object object) {
+//                            isExists(rootInActiveWindow22, "招商银行安全输入", new onCallBack() {
+//                                @Override
+//                                public void onCallBack(Object object) {
+//                                    DFSPasswordLogin(rootInActiveWindow22, "1", "android.widget.Button", "7651981", new onCallBack() {
+//                                        @Override
+//                                        public void onCallBack(Object object) {
+//                                            DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "完成", 2, new onCallBack() {
+//                                                @Override
+//                                                public void onCallBack(Object object) {
+//                                                    findViewByNameAndAction(rootInActiveWindow22, "登录", 2, new onCallBack() {
+//                                                        @Override
+//                                                        public void onCallBack(Object object) {
+//                                                            state = State.Tranfer;
+//                                                            LogUtils.e("======", "======完成登录~~~");
+//                                                        }
+//                                                    });
+//                                                }
+//                                            });
+//                                        }
+//                                    });
+//                                }
+//                            });
+//                        }
+//                    });
+//                } else
+                state = State.Tranfer;
+                if (state == State.Tranfer) {
+                    findViewByNameAndClickParent(rootInActiveWindow22, "首页", 2, new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            findViewByNameAndClickParent(rootInActiveWindow22, "转账", 2, new onCallBack() {
                                 @Override
                                 public void onCallBack(Object object) {
+                                    findViewByNameAndClickParent(rootInActiveWindow22, "银行账号转账", 2, new onCallBack() {
+                                        @Override
+                                        public void onCallBack(Object object) {
+
+                                        }
+                                    });
+                                    Global.runInMainThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+
+                                            LogUtils.e("======", "======time2:" + System.currentTimeMillis());
+                                            state = State.Tranfer;
+                                            LogUtils.e("======", "======转账~~~");
+                                        }
+                                    }, 3000);
 
                                 }
                             });
-                            if (is123) {
-                                DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "ABC", 3, new onCallBack() {
-                                    @Override
-                                    public void onCallBack(Object object) {
-                                        is123 = false;
-                                    }
-                                });
-                            }
-                            isExists(getRootInActiveWindow(), "ABC", new onCallBack() {
-                                @Override
-                                public void onCallBack(Object object) {
-                                    if (isPwd && !isClickQQ) {
-                                        DFSPasswordLogin(rootInActiveWindow, "1", "android.widget.TextView", "202006", new onCallBack() {
-                                            @Override
-                                            public void onCallBack(Object object) {
-                                                isPwd = false;
-                                                DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "完成", 3, new onCallBack() {
-                                                    @Override
-                                                    public void onCallBack(Object object) {
-                                                        state = State.Main;
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
-
-                                }
-                            });
-                            ztLog("===state=== 11changed" + this.state);
                         }
-                    } else {
-                        if (rootInActiveWindow != null) {
-                            DFSExt(rootInActiveWindow, "android.widget.TextView", "转账汇款");
-                            ztLog("===state=== 11changed" + this.state);
-                        }
-                        ztLog("===state=== " + this.state + this.orderScore);
-                        try {
-                            Thread.sleep(500);
-                        } catch (Exception unused) {
-                        }
-                        DFSWebView(accessibilityEvent.getSource(), "android.view.View", "银行卡转账");
-                        ztLog("===state=== 22" + this.state + this.orderScore);
-                        try {
-                            Thread.sleep(500);
-                        } catch (Exception unused2) {
-                        }
-                        DFSbank(accessibilityEvent.getSource(), "android.widget.EditText", "请输入收款人姓名");
-                        Thread.sleep(500);
-                        DFSSMB(accessibilityEvent.getSource(), "android.view.View", "获取验证码");
-                        ztLog("===state=== 22" + this.state + this.orderScore);
-                        Sleep(500);
-                        AccessibilityNodeInfo rootInActiveWindow2 = getRootInActiveWindow();
-                        String string = getSharedPreferences("setting", 0).getString("Password", "");
-                        ztLog("pwd:" + string);
-                        DFSPassword(rootInActiveWindow2, "android.widget.TextView", string);
-                        if (this.state == State.Password) {
-                            try {
-                                Thread.sleep(500);
-                            } catch (Exception unused3) {
-                            }
-                            performBackClick();
-                            try {
-                                Thread.sleep(500);
-                            } catch (Exception unused4) {
-                            }
-                            performBackClick();
-                            try {
-                                Thread.sleep(500);
-                            } catch (Exception unused5) {
-                            }
-                            performBackClick();
-                            this.state = State.Main;
-                            new Thread() {
-                                /* class com.position.wyh.position.AutoClickService.AnonymousClass2 */
-
-                                public void run() {
-                                    AutoClickService.this.deviceNoftify();
-                                    AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
-                                }
-                            }.start();
-                        }
-                    }
-                } catch (Exception e) {
-                    ztLog("Exception1:" + e.getMessage());
+                    });
                 }
             }
+
+            return;
+//            if (isClickQQ && state == State.Login) {
+//                isExists(getRootInActiveWindow(), "123", new onCallBack() {
+//                    @Override
+//                    public void onCallBack(Object object) {
+//                        // final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
+//                        DFSPasswordLogin(rootInActiveWindow22, "q", "android.widget.TextView", "qq", new onCallBack() {
+//                            @Override
+//                            public void onCallBack(Object object) {
+//                                isClickQQ = false;
+//                                DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "123", 3, null);
+//                            }
+//                        });
+//                    }
+//                });
+//            }
+//            if (eventType == 32 || eventType == 4096) {//TYPE_WINDOW_STATE_CHANGED:32
+//                //  ztLog("===start search=== " + charSequence + " " + charSequence2);
+//                final AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
+//                try {
+//                    if (state == State.Login) {
+//                        if (rootInActiveWindow != null) {
+//                            DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "手机号/身份证号", 1, null);
+//                            try {
+//                                Thread.sleep(300);
+//                            } catch (Exception unused) {
+//                            }
+//                            DFSExtLogin(rootInActiveWindow, "android.widget.EditText", "请输入登录密码", 2, new onCallBack() {
+//                                @Override
+//                                public void onCallBack(Object object) {
+//
+//                                }
+//                            });
+//                            if (is123) {
+//                                DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "ABC", 3, new onCallBack() {
+//                                    @Override
+//                                    public void onCallBack(Object object) {
+//                                        is123 = false;
+//                                    }
+//                                });
+//                            }
+//                            isExists(getRootInActiveWindow(), "ABC", new onCallBack() {
+//                                @Override
+//                                public void onCallBack(Object object) {
+//                                    if (isPwd && !isClickQQ) {
+//                                        DFSPasswordLogin(rootInActiveWindow, "1", "android.widget.TextView", "202006", new onCallBack() {
+//                                            @Override
+//                                            public void onCallBack(Object object) {
+//                                                isPwd = false;
+//                                                DFSExtLogin(rootInActiveWindow, "android.widget.TextView", "完成", 3, new onCallBack() {
+//                                                    @Override
+//                                                    public void onCallBack(Object object) {
+//                                                        state = State.Main;
+//                                                    }
+//                                                });
+//                                            }
+//                                        });
+//                                    }
+//
+//                                }
+//                            });
+//                            ztLog("===state=== 11changed" + this.state);
+//                        }
+//                    } else {
+//                        if (rootInActiveWindow != null) {
+//                            DFSExt(rootInActiveWindow, "android.widget.TextView", "转账汇款");
+//                            ztLog("===state=== 11changed" + this.state);
+//                        }
+//                        ztLog("===state=== " + this.state + this.orderScore);
+//                        try {
+//                            Thread.sleep(500);
+//                        } catch (Exception unused) {
+//                        }
+//                        DFSWebView(accessibilityEvent.getSource(), "android.view.View", "银行卡转账");
+//                        ztLog("===state=== 22" + this.state + this.orderScore);
+//                        try {
+//                            Thread.sleep(500);
+//                        } catch (Exception unused2) {
+//                        }
+//                        DFSbank(accessibilityEvent.getSource(), "android.widget.EditText", "请输入收款人姓名");
+//                        Thread.sleep(500);
+//                        DFSSMB(accessibilityEvent.getSource(), "android.view.View", "获取验证码");
+//                        ztLog("===state=== 22" + this.state + this.orderScore);
+//                        Sleep(500);
+//                        AccessibilityNodeInfo rootInActiveWindow2 = getRootInActiveWindow();
+//                        String string = getSharedPreferences("setting", 0).getString("Password", "");
+//                        ztLog("pwd:" + string);
+//                        DFSPassword(rootInActiveWindow2, "android.widget.TextView", string);
+//                        if (this.state == State.Password) {
+//                            try {
+//                                Thread.sleep(500);
+//                            } catch (Exception unused3) {
+//                            }
+//                            performBackClick();
+//                            try {
+//                                Thread.sleep(500);
+//                            } catch (Exception unused4) {
+//                            }
+//                            performBackClick();
+//                            try {
+//                                Thread.sleep(500);
+//                            } catch (Exception unused5) {
+//                            }
+//                            performBackClick();
+//                            this.state = State.Main;
+//                            new Thread() {
+//                                /* class com.position.wyh.position.AutoClickService.AnonymousClass2 */
+//
+//                                public void run() {
+//                                    AutoClickService.this.deviceNoftify();
+//                                    AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
+//                                }
+//                            }.start();
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                    ztLog("Exception1:" + e.getMessage());
+//                }
+//            }
             //  ztLog("===end search=== " + charSequence + " " + charSequence2);
         }
 

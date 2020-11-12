@@ -24,6 +24,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.position.wyh.position.test.ApiInvoleUtils;
 import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
+import com.position.wyh.position.utlis.Global;
 import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.viewpagerindicator.IconPagerAdapter;
@@ -82,6 +83,8 @@ public class MainActivity extends FragmentActivity {
         if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             requestPermissions(permissions, 200);
         }
+        Global.setContext(this);
+        Global.setHandler(new Handler());
     }
 
 
