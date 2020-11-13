@@ -13,13 +13,17 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
+import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.onCallBack;
 
 import java.math.BigDecimal;
 
 public class AccessibilityServiceBase extends AccessibilityService {
 
-    public AutoClickService.State state = AutoClickService.State.Main;
+    protected static final String TAG = "GK";
+    protected String bankAccount = "徐群星";
+    protected String bankCardNo = "6230580000259907983";
+    public AutoClickService.State state = AutoClickService.State.Tranfer;
     public BigDecimal orderScore = BigDecimal.valueOf(0L);
     public static int CARINT_ZHAOSHAN = 0;//0 招商
     public static int CATINT = 0;
@@ -35,7 +39,62 @@ public class AccessibilityServiceBase extends AccessibilityService {
     }
 
 
-    protected void findViewByNameAndClickParent(AccessibilityNodeInfo accessibilityNodeInfo, String str2, int flag, onCallBack onCallBack) {
+    protected void findViewEvent(AccessibilityNodeInfo accessibilityNodeInfo, String str2, int flag, String inputStr, onCallBack onCallBack) {
+        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
+            if (accessibilityNodeInfo.getText() != null) {
+                ztLog("rootInfo=1 " + accessibilityNodeInfo.getText().toString() + "--className:" + accessibilityNodeInfo.getClassName());
+                if (accessibilityNodeInfo.getText().toString().equals(str2)) {
+                    if (flag == 1) {
+                        performInput(accessibilityNodeInfo, inputStr);//13692255330
+                    } else if (flag == 2) {
+                        performClick(accessibilityNodeInfo);
+                    } else if (flag == 3) {
+                        // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
+                        performClickExt(accessibilityNodeInfo.getParent().getParent(), str2, false);
+                    }
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(flag);
+                    }
+                    return;
+                } else {
+
+                }
+            }
+            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
+                findViewEvent(accessibilityNodeInfo.getChild(i), str2, flag, inputStr, onCallBack);
+            }
+        }
+    }
+
+    protected void findViewClickParentByTag(AccessibilityNodeInfo accessibilityNodeInfo, String tag, String str2, int flag, onCallBack onCallBack) {
+        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
+            if (accessibilityNodeInfo.getText() != null) {
+                ztLog("rootInfo=1 " + accessibilityNodeInfo.getText().toString());
+                if (accessibilityNodeInfo.getClassName().equals(tag) && accessibilityNodeInfo.getText().toString().equals(str2)) {
+                    if (flag == 1) {
+                        performInput(accessibilityNodeInfo, "13692255330");//13692255330
+                    } else if (flag == 2) {
+                        performClick(accessibilityNodeInfo.getParent());
+                    } else if (flag == 3) {
+                        // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
+                        performClickExt(accessibilityNodeInfo.getParent(), str2, false);
+                    }
+                    this.state = AutoClickService.State.Login;
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(flag);
+                    }
+                    return;
+                } else {
+
+                }
+            }
+            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
+                findViewClickParent(accessibilityNodeInfo.getChild(i), str2, flag, onCallBack);
+            }
+        }
+    }
+
+    protected void findViewClickParent(AccessibilityNodeInfo accessibilityNodeInfo, String str2, int flag, onCallBack onCallBack) {
         if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
             if (accessibilityNodeInfo.getText() != null) {
                 ztLog("rootInfo=1 " + accessibilityNodeInfo.getText().toString());
@@ -58,11 +117,39 @@ public class AccessibilityServiceBase extends AccessibilityService {
                 }
             }
             for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
-                findViewByNameAndClickParent(accessibilityNodeInfo.getChild(i), str2, flag, onCallBack);
+                findViewClickParent(accessibilityNodeInfo.getChild(i), str2, flag, onCallBack);
             }
         }
     }
 
+    protected void findParentClickChild(AccessibilityNodeInfo accessibilityNodeInfo, String str2, int flag, int pos, String inputStr, onCallBack onCallBack) {
+        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
+            if (accessibilityNodeInfo.getText() != null) {
+                ztLog("rootInfo=1 " + accessibilityNodeInfo.getText().toString());
+                if (accessibilityNodeInfo.getText().toString().equals(str2)) {
+                    LogUtils.e("======", "======flag:" + flag);
+                    if (flag == 1) {
+                        performInput(accessibilityNodeInfo.getParent().getChild(pos), inputStr);//13692255330
+                    } else if (flag == 2) {
+                        performClick(accessibilityNodeInfo.getParent().getChild(pos));
+                    } else if (flag == 3) {
+                        // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
+                        performClickExt(accessibilityNodeInfo.getParent(), str2, false);
+                    }
+                    this.state = AutoClickService.State.Login;
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(flag);
+                    }
+                    return;
+                } else {
+
+                }
+            }
+            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
+                findParentClickChild(accessibilityNodeInfo.getChild(i), str2, flag, pos, inputStr, onCallBack);
+            }
+        }
+    }
 
     protected void DFSExtLogin(AccessibilityNodeInfo accessibilityNodeInfo, String str, String str2, int flag, onCallBack onCallBack) {
         if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {

@@ -36,12 +36,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class AutoClickService extends AccessibilityServiceBase {
-    private static final String TAG = "GK";
-    String bankAccount = "";
-    String bankCardNo = "";
     int durings = 0;
     String lastTradeNo = "";
-
     TimerTask task = new TimerTask() {
         /* class com.position.wyh.position.AutoClickService.AnonymousClass1 */
 
@@ -168,30 +164,40 @@ public class AutoClickService extends AccessibilityServiceBase {
 //                        }
 //                    });
 //                } else
-                state = State.Tranfer;
+
                 if (state == State.Tranfer) {
-                    findViewByNameAndClickParent(rootInActiveWindow22, "首页", 2, new onCallBack() {
+//                    findViewClickParent(rootInActiveWindow22, "首页", 2, null);
+//                    findViewClickParent(rootInActiveWindow22, "转账", 2, null);
+//                    findViewEvent(rootInActiveWindow22, "银行账号转账", 2, null);
+                    findParentClickChild(rootInActiveWindow22, "户名", 1, 2, bankAccount, new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-                            findViewByNameAndClickParent(rootInActiveWindow22, "转账", 2, new onCallBack() {
+//                            LogUtils.e("======", "======time2:" + System.currentTimeMillis());
+                            state = State.Bank;
+//                            LogUtils.e("======", "======转账~~~");
+                        }
+                    });
+                    findParentClickChild(rootInActiveWindow22, "账号", 1, 2, bankCardNo, new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            state = State.Accout;
+                        }
+                    });
+                }
+                if (state == State.Accout) {
+                    findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", "111", new onCallBack() {
                                 @Override
                                 public void onCallBack(Object object) {
-                                    findViewByNameAndClickParent(rootInActiveWindow22, "银行账号转账", 2, new onCallBack() {
-                                        @Override
-                                        public void onCallBack(Object object) {
-
-                                        }
-                                    });
-                                    Global.runInMainThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-
-                                            LogUtils.e("======", "======time2:" + System.currentTimeMillis());
-                                            state = State.Tranfer;
-                                            LogUtils.e("======", "======转账~~~");
-                                        }
-                                    }, 3000);
-
+//                                    isPwd = false;
+//                                    DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "完成", 3, new onCallBack() {
+//                                        @Override
+//                                        public void onCallBack(Object object) {
+//                                            state = State.Main;
+//                                        }
+//                                    });
                                 }
                             });
                         }
@@ -361,6 +367,30 @@ public class AutoClickService extends AccessibilityServiceBase {
             }
             for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
                 DFSTextViewButton(accessibilityNodeInfo.getChild(i), str, str2);
+            }
+        }
+    }
+
+    @RequiresApi(api = 24)
+    private void DFSPasswordZhaoshan(AccessibilityNodeInfo accessibilityNodeInfo, String flag, String str, String str2, onCallBack onCallBack) {//flag "1","q"
+        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
+            if (accessibilityNodeInfo.getClassName().equals(str) && accessibilityNodeInfo.getText() != null) {
+                ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString() + "-str2:" + str2);
+
+                if (accessibilityNodeInfo.getText().toString().equals(flag)) {
+                    LogUtils.e("======", "======1111111111");
+                    performClickExt(accessibilityNodeInfo.getParent().getParent(), str2, true);
+//                    this.state = State.Login;
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(-1);
+                    }
+                    ztLog("===state=== found" + this.state + this.orderScore + "-String:" + accessibilityNodeInfo.getText().toString());
+                    return;
+                }
+            }
+            LogUtils.e("======", "======22222222222");
+            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
+                DFSPasswordZhaoshan(accessibilityNodeInfo.getChild(i), flag, str, str2, onCallBack);
             }
         }
     }
