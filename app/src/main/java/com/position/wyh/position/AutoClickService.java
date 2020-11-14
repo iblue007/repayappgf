@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AutoClickService extends AccessibilityServiceBase {
+public class AutoClickService extends AccessibilityServiceZhanShan {
     int durings = 0;
     String lastTradeNo = "";
     TimerTask task = new TimerTask() {
@@ -126,49 +126,44 @@ public class AutoClickService extends AccessibilityServiceBase {
         testUtil.test(eventType);
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
             if (AccessibilityServiceBase.CATINT == AccessibilityServiceBase.CARINT_ZHAOSHAN) {
-//                if (state == State.Main) {
-//                    findViewByNameAndAction(rootInActiveWindow22, "我的", 2, new onCallBack() {
-//                        @Override
-//                        public void onCallBack(Object object) {
-//                            Sleep(3000);
-//                            state = State.Login;
-//                            LogUtils.e("======", "======完成d点击我的~~~");
-//                        }
-//                    });
-//                } else if (state == State.Login) {
-//                    isExists(rootInActiveWindow22, "请输入密码", new onCallBack() {
-//                        @Override
-//                        public void onCallBack(Object object) {
-//                            isExists(rootInActiveWindow22, "招商银行安全输入", new onCallBack() {
-//                                @Override
-//                                public void onCallBack(Object object) {
-//                                    DFSPasswordLogin(rootInActiveWindow22, "1", "android.widget.Button", "7651981", new onCallBack() {
-//                                        @Override
-//                                        public void onCallBack(Object object) {
-//                                            DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "完成", 2, new onCallBack() {
-//                                                @Override
-//                                                public void onCallBack(Object object) {
-//                                                    findViewByNameAndAction(rootInActiveWindow22, "登录", 2, new onCallBack() {
-//                                                        @Override
-//                                                        public void onCallBack(Object object) {
-//                                                            state = State.Tranfer;
-//                                                            LogUtils.e("======", "======完成登录~~~");
-//                                                        }
-//                                                    });
-//                                                }
-//                                            });
-//                                        }
-//                                    });
-//                                }
-//                            });
-//                        }
-//                    });
-//                } else
-
-                if (state == State.Tranfer) {
-//                    findViewClickParent(rootInActiveWindow22, "首页", 2, null);
-//                    findViewClickParent(rootInActiveWindow22, "转账", 2, null);
-//                    findViewEvent(rootInActiveWindow22, "银行账号转账", 2, null);
+                if (state == State.Main) {
+                    findParentClickChild(rootInActiveWindow22, "我的", 2, 1, "", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            Sleep(3000);
+                            state = State.Login;
+                            LogUtils.e("======", "======完成d点击我的~~~");
+                        }
+                    });
+                } else if (state == State.Login) {
+                    isExists(rootInActiveWindow22, "请输入密码", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            isExists(rootInActiveWindow22, "招商银行安全输入", new onCallBack() {
+                                @Override
+                                public void onCallBack(Object object) {
+                                    DFSPasswordLogin(rootInActiveWindow22, "1", "android.widget.Button", "7651981", new onCallBack() {
+                                        @Override
+                                        public void onCallBack(Object object) {
+                                            DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "完成", 2, new onCallBack() {
+                                                @Override
+                                                public void onCallBack(Object object) {
+                                                    findParentClickChild(rootInActiveWindow22, "登录", 2, 0, "", new onCallBack() {
+                                                        @Override
+                                                        public void onCallBack(Object object) {
+                                                            state = State.Tranfer;
+                                                            LogUtils.e("======", "======完成登录~~~");
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                } else if (state == State.Tranfer) {
                     findParentClickChild(rootInActiveWindow22, "户名", 1, 2, bankAccount, new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
@@ -188,18 +183,27 @@ public class AutoClickService extends AccessibilityServiceBase {
                     findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-                            DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", "111", new onCallBack() {
-                                @Override
-                                public void onCallBack(Object object) {
-//                                    isPwd = false;
-//                                    DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "完成", 3, new onCallBack() {
-//                                        @Override
-//                                        public void onCallBack(Object object) {
-//                                            state = State.Main;
-//                                        }
-//                                    });
-                                }
-                            });
+
+                        }
+                    });
+                    Sleep(2000);
+                    DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", transMoney, new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            String strings = (String) object;
+                            zhanShanInputMoneyInt = zhanShanInputMoneyInt + 1;
+                            LogUtils.e("======", "======str:" + zhanShanInputMoneyInt);
+                            if (zhanShanInputMoneyInt == transMoney.length()) {
+                                state = State.Conform;
+                                Sleep(2000);
+                                findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
+                                    @Override
+                                    public void onCallBack(Object object) {
+
+                                    }
+                                });
+                            }
+
                         }
                     });
                 }
@@ -370,31 +374,6 @@ public class AutoClickService extends AccessibilityServiceBase {
             }
         }
     }
-
-    @RequiresApi(api = 24)
-    private void DFSPasswordZhaoshan(AccessibilityNodeInfo accessibilityNodeInfo, String flag, String str, String str2, onCallBack onCallBack) {//flag "1","q"
-        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
-            if (accessibilityNodeInfo.getClassName().equals(str) && accessibilityNodeInfo.getText() != null) {
-                ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString() + "-str2:" + str2);
-
-                if (accessibilityNodeInfo.getText().toString().equals(flag)) {
-                    LogUtils.e("======", "======1111111111");
-                    performClickExt(accessibilityNodeInfo.getParent().getParent(), str2, true);
-//                    this.state = State.Login;
-                    if (onCallBack != null) {
-                        onCallBack.onCallBack(-1);
-                    }
-                    ztLog("===state=== found" + this.state + this.orderScore + "-String:" + accessibilityNodeInfo.getText().toString());
-                    return;
-                }
-            }
-            LogUtils.e("======", "======22222222222");
-            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
-                DFSPasswordZhaoshan(accessibilityNodeInfo.getChild(i), flag, str, str2, onCallBack);
-            }
-        }
-    }
-
 
     @RequiresApi(api = 24)
     private void DFSPasswordLogin(AccessibilityNodeInfo accessibilityNodeInfo, String flag, String str, String str2, onCallBack onCallBack) {//flag "1","q"

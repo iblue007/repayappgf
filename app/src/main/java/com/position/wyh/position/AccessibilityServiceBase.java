@@ -23,7 +23,9 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected static final String TAG = "GK";
     protected String bankAccount = "徐群星";
     protected String bankCardNo = "6230580000259907983";
-    public AutoClickService.State state = AutoClickService.State.Tranfer;
+    protected String transMoney = "111";
+    protected int zhanShanInputMoneyInt = 0;
+    public AutoClickService.State state = AutoClickService.State.Login;
     public BigDecimal orderScore = BigDecimal.valueOf(0L);
     public static int CARINT_ZHAOSHAN = 0;//0 招商
     public static int CATINT = 0;
@@ -190,7 +192,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
             if (!(accessibilityNodeInfo.getChild(i) == null || accessibilityNodeInfo.getChild(i).getText() == null)) {
                 Log.d("GK", "targetInfo.getChild(i) " + ((Object) accessibilityNodeInfo.getChild(i).getText()) + " c: " + c);
                 Log.e("====", "=====:" + accessibilityNodeInfo.getChild(i).getText());
-                if (accessibilityNodeInfo.getChild(i).getText().equals(c)) {
+                if (accessibilityNodeInfo.getChild(i).getText().toString().equals(c)) {
                     Rect rect = new Rect();
                     accessibilityNodeInfo.getChild(i).getBoundsInScreen(rect);
                     Log.d("GK", "targetInfo.getChild(i)" + rect);
