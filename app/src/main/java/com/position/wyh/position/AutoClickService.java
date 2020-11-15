@@ -180,30 +180,52 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     });
                 }
                 if (state == State.Accout) {
+                    Sleep(2000);
                     findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
 
+                            DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", transMoney, new onCallBack() {
+                                @Override
+                                public void onCallBack(Object object) {
+                                    // String strings = (String) object;
+                                    zhanShanInputMoneyInt = zhanShanInputMoneyInt + 1;
+                                    LogUtils.e("======", "======str:" + zhanShanInputMoneyInt);
+                                    if (zhanShanInputMoneyInt == transMoney.length()) {
+                                        //   state = State.Conform;
+                                        Sleep(2000);
+                                        findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
+                                            @Override
+                                            public void onCallBack(Object object) {
+                                                DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "下一步", 2, new onCallBack() {
+                                                    @Override
+                                                    public void onCallBack(Object object) {
+                                                      //  Sleep(1500);
+                                                        state = State.Password;
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                }
+                            });
                         }
                     });
-                    Sleep(2000);
-                    DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", transMoney, new onCallBack() {
+                }else if(state ==  State.Password){
+                    final String string = getSharedPreferences("setting", 0).getString("Password", "");
+                    DFSPasswordZhaoshan2(rootInActiveWindow22, "1", "android.widget.Button", string, new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-                            String strings = (String) object;
-                            zhanShanInputMoneyInt = zhanShanInputMoneyInt + 1;
-                            LogUtils.e("======", "======str:" + zhanShanInputMoneyInt);
-                            if (zhanShanInputMoneyInt == transMoney.length()) {
-                                state = State.Conform;
-                                Sleep(2000);
-                                findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
+                            zhanShanPwdInputInt = zhanShanPwdInputInt + 1;
+                            if (zhanShanPwdInputInt == string.length()) {
+                                DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "确认转账", 2, new onCallBack() {
                                     @Override
                                     public void onCallBack(Object object) {
-
+                                          state = State.SMB;
+                                        LogUtils.e("======", "======okkkkkk");
                                     }
                                 });
                             }
-
                         }
                     });
                 }

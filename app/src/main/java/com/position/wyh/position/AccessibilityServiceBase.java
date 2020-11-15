@@ -23,9 +23,10 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected static final String TAG = "GK";
     protected String bankAccount = "徐群星";
     protected String bankCardNo = "6230580000259907983";
-    protected String transMoney = "111";
+    protected String transMoney = "0·01";
     protected int zhanShanInputMoneyInt = 0;
-    public AutoClickService.State state = AutoClickService.State.Login;
+    protected int zhanShanPwdInputInt = 0;
+    public AutoClickService.State state = AutoClickService.State.Tranfer;
     public BigDecimal orderScore = BigDecimal.valueOf(0L);
     public static int CARINT_ZHAOSHAN = 0;//0 招商
     public static int CATINT = 0;
@@ -237,7 +238,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected void isExists(AccessibilityNodeInfo accessibilityNodeInfo, String str, onCallBack onCallBack) {
         if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
             if (accessibilityNodeInfo.getText() != null) {
-                ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString());
+                ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString()+"--str:"+str);
                 if (accessibilityNodeInfo.getText().toString().equals(str)) {
                     ztLog("===state=== found" + this.state + this.orderScore + "-String:" + accessibilityNodeInfo.getText().toString());
                     if (onCallBack != null) {
