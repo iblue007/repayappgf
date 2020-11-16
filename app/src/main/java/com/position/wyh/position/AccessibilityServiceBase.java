@@ -26,10 +26,10 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected String transMoney = "0·01";
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
-    public AutoClickService.State state = AutoClickService.State.Tranfer;
+    public AutoClickService.State state = AutoClickService.State.Main;
     public BigDecimal orderScore = BigDecimal.valueOf(0L);
     public static int CARINT_ZHAOSHAN = 0;//0 招商
-    public static int CATINT = 0;
+    public static int CATINT = CARINT_ZHAOSHAN;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -82,7 +82,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
                         // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
                         performClickExt(accessibilityNodeInfo.getParent(), str2, false);
                     }
-                    this.state = AutoClickService.State.Login;
+                    //   this.state = AutoClickService.State.Login;
                     if (onCallBack != null) {
                         onCallBack.onCallBack(flag);
                     }
@@ -110,7 +110,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
                         // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
                         performClickExt(accessibilityNodeInfo.getParent(), str2, false);
                     }
-                    this.state = AutoClickService.State.Login;
+                    //  this.state = AutoClickService.State.Login;
                     if (onCallBack != null) {
                         onCallBack.onCallBack(flag);
                     }
@@ -134,12 +134,16 @@ public class AccessibilityServiceBase extends AccessibilityService {
                     if (flag == 1) {
                         performInput(accessibilityNodeInfo.getParent().getChild(pos), inputStr);//13692255330
                     } else if (flag == 2) {
-                        performClick(accessibilityNodeInfo.getParent().getChild(pos));
+                        if (pos < 0) {
+                            performClick(accessibilityNodeInfo.getParent());
+                        } else {
+                            performClick(accessibilityNodeInfo.getParent().getChild(pos));
+                        }
                     } else if (flag == 3) {
                         // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
                         performClickExt(accessibilityNodeInfo.getParent(), str2, false);
                     }
-                    this.state = AutoClickService.State.Login;
+                    // this.state = AutoClickService.State.Login;
                     if (onCallBack != null) {
                         onCallBack.onCallBack(flag);
                     }
@@ -172,9 +176,13 @@ public class AccessibilityServiceBase extends AccessibilityService {
                         // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
                         performClickExt(accessibilityNodeInfo.getParent(), str2, false);
                     }
-                    this.state = AutoClickService.State.Login;
-                    if (onCallBack != null) {
-                        onCallBack.onCallBack(flag);
+                    //   this.state = AutoClickService.State.Login;
+                    try {
+                        Thread.sleep(500);
+                        if (onCallBack != null) {
+                            onCallBack.onCallBack(flag);
+                        }
+                    } catch (Exception unused) {
                     }
                     ztLog("===state=== found" + this.state + this.orderScore);
                     return;
@@ -238,7 +246,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected void isExists(AccessibilityNodeInfo accessibilityNodeInfo, String str, onCallBack onCallBack) {
         if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
             if (accessibilityNodeInfo.getText() != null) {
-                ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString()+"--str:"+str);
+                ztLog("rootInfoq=x " + accessibilityNodeInfo.getText().toString() + "--str:" + str);
                 if (accessibilityNodeInfo.getText().toString().equals(str)) {
                     ztLog("===state=== found" + this.state + this.orderScore + "-String:" + accessibilityNodeInfo.getText().toString());
                     if (onCallBack != null) {

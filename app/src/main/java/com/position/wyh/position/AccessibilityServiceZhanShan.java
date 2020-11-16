@@ -119,7 +119,7 @@ public class AccessibilityServiceZhanShan extends AccessibilityServiceBase {
             }
         }, null);
         try {
-            Thread.sleep(300);
+            Thread.sleep(500);
             if (onCallBack != null) {
                 onCallBack.onCallBack(str);
             }

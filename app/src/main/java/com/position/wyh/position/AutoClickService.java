@@ -79,6 +79,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         Accout,
         Conform,
         SMB,
+        WAITING,
         Password,
         Login
     }
@@ -124,10 +125,17 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         String charSequence2 = accessibilityEvent.getClassName().toString();
         final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
         testUtil.test(eventType);
+        LogUtils.e("======", "=======onAccessibilityEvent--state:" + state);
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
             if (AccessibilityServiceBase.CATINT == AccessibilityServiceBase.CARINT_ZHAOSHAN) {
                 if (state == State.Main) {
-                    findParentClickChild(rootInActiveWindow22, "我的", 2, 1, "", new onCallBack() {
+                    isExists(rootInActiveWindow22, "快速找回密码", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            state = State.Login;
+                        }
+                    });
+                    findParentClickChild(rootInActiveWindow22, "我的", 2, -1, "", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
                             Sleep(3000);
@@ -136,19 +144,27 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
                 } else if (state == State.Login) {
+                    isExists(rootInActiveWindow22, "银行卡", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            state = State.Tranfer;
+                            LogUtils.e("======", "======已经登录~~~");
+                        }
+                    });
                     isExists(rootInActiveWindow22, "请输入密码", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
                             isExists(rootInActiveWindow22, "招商银行安全输入", new onCallBack() {
                                 @Override
                                 public void onCallBack(Object object) {
-                                    DFSPasswordLogin(rootInActiveWindow22, "1", "android.widget.Button", "7651981", new onCallBack() {
+                                    final String loginPassword = getSharedPreferences("setting", 0).getString("loginPassword", "");
+                                    DFSPasswordLogin(rootInActiveWindow22, "1", "android.widget.Button", loginPassword, new onCallBack() {
                                         @Override
                                         public void onCallBack(Object object) {
                                             DFSExtLogin(rootInActiveWindow22, "android.widget.TextView", "完成", 2, new onCallBack() {
                                                 @Override
                                                 public void onCallBack(Object object) {
-                                                    findParentClickChild(rootInActiveWindow22, "登录", 2, 0, "", new onCallBack() {
+                                                    findParentClickChild(rootInActiveWindow22, "登录", 2, -1, "", new onCallBack() {
                                                         @Override
                                                         public void onCallBack(Object object) {
                                                             state = State.Tranfer;
@@ -164,18 +180,45 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
                 } else if (state == State.Tranfer) {
+                    isExists(rootInActiveWindow22, "频繁操作", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            Sleep(2000);
+                            performBackClick();
+                        }
+                    });
+
+                    findParentClickChild(rootInActiveWindow22, "首页", 2, -1, "", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            LogUtils.e("======", "=======首页--state:" + state);
+                        }
+                    });
+
+                    findParentClickChild(rootInActiveWindow22, "转账", 2, -1, "", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            LogUtils.e("======", "=======转账--state:" + state);
+                        }
+                    });
+
+                    findViewEvent(rootInActiveWindow22, "银行账号转账", 2, "", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            LogUtils.e("======", "=======银行账号转账--state:" + state);
+                        }
+                    });
                     findParentClickChild(rootInActiveWindow22, "户名", 1, 2, bankAccount, new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-//                            LogUtils.e("======", "======time2:" + System.currentTimeMillis());
-                            state = State.Bank;
-//                            LogUtils.e("======", "======转账~~~");
+                            LogUtils.e("======", "=======户名--state:" + state);
                         }
                     });
                     findParentClickChild(rootInActiveWindow22, "账号", 1, 2, bankCardNo, new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
                             state = State.Accout;
+                            LogUtils.e("======", "=======账号--state:" + state);
                         }
                     });
                 }
@@ -184,7 +227,6 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-
                             DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", transMoney, new onCallBack() {
                                 @Override
                                 public void onCallBack(Object object) {
@@ -200,7 +242,6 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                                 DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "下一步", 2, new onCallBack() {
                                                     @Override
                                                     public void onCallBack(Object object) {
-                                                      //  Sleep(1500);
                                                         state = State.Password;
                                                     }
                                                 });
@@ -209,9 +250,15 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                     }
                                 }
                             });
+
                         }
                     });
-                }else if(state ==  State.Password){
+                } else if (state == State.Password) {
+                    findViewEvent(rootInActiveWindow22, "继续转账", 2, "", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                        }
+                    });
                     final String string = getSharedPreferences("setting", 0).getString("Password", "");
                     DFSPasswordZhaoshan2(rootInActiveWindow22, "1", "android.widget.Button", string, new onCallBack() {
                         @Override
@@ -221,14 +268,25 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                 DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "确认转账", 2, new onCallBack() {
                                     @Override
                                     public void onCallBack(Object object) {
-                                          state = State.SMB;
+
                                         LogUtils.e("======", "======okkkkkk");
                                     }
                                 });
                             }
                         }
                     });
+                    isExists(rootInActiveWindow22, "转账成功", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            state = State.WAITING;
+                            performBackClick();
+                            Sleep(1000);
+                            performBackClick();
+                        }
+                    });
                 }
+            } else if (state == State.WAITING) {
+                LogUtils.e("======", "=======等待--state:" + state);
             }
 
             return;
@@ -406,7 +464,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                 if (accessibilityNodeInfo.getText().toString().equals(flag)) {
                     LogUtils.e("======", "======1111111111");
                     performClickExt(accessibilityNodeInfo.getParent(), str2, true);
-                    this.state = State.Login;
+                    //      this.state = State.Login;
                     if (onCallBack != null) {
                         onCallBack.onCallBack(-1);
                     }
@@ -430,7 +488,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                 if (accessibilityNodeInfo.getText().toString().equals(str2)) {
                     ztLog("rootInfo=DFSButtonLogin " + accessibilityNodeInfo);
                     performClick(accessibilityNodeInfo);
-                    this.state = State.Login;
+                    //   this.state = State.Login;
                     ztLog("===state=== found" + this.state + this.orderScore);
                     return;
                 }
@@ -730,8 +788,6 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
         LogUtils.e(TAG, "taskPost: " + s);
         handle(s);
-
-
     }
 
     public String taskPost1() {

@@ -46,8 +46,17 @@ public class knowledgeFragment extends BaseFragment {
         mButton_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                started = !started;
 
+                String string = getContext().getSharedPreferences("setting", 0).getString("Password", "");
+                String deviceId = getContext().getSharedPreferences("setting", 0).getString("deviceId", "");
+                String loginPassword = getContext().getSharedPreferences("setting", 0).getString("loginPassword", "");
+                String loginAccount = getContext().getSharedPreferences("setting", 0).getString("loginAccount", "");
+                if (TextUtils.isEmpty(string) || TextUtils.isEmpty(loginAccount) ||
+                        TextUtils.isEmpty(loginPassword) || TextUtils.isEmpty(string)) {
+                    Toast.makeText(getContext(), "支付密码、登录账号等信息请先完善", 1).show();
+                    return;
+                }
+                started = !started;
                 if (started) {
                     //Toast.makeText(getActivity(),"启动成功！",Toast.LENGTH_SHORT).show();
                     mButton_start.setText("停止自动化测试");
