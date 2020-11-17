@@ -43,27 +43,29 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
 
         public void run() {
             try {
-//                AutoClickService.this.ztLog("===TimerTask=== " + AutoClickService.this.orderScore + " " + knowledgeFragment.started + " tradeNo " + AutoClickService.this.tradeNo + " lastTradeNo " + AutoClickService.this.lastTradeNo + " durings " + AutoClickService.this.durings);
-//                if (AutoClickService.this.orderScore == BigDecimal.valueOf(0L) && knowledgeFragment.started) {
-//                    AutoClickService.this.ztLog("===TimerTask===11 " + AutoClickService.this.orderScore + " " + knowledgeFragment.started);
-//                    AutoClickService.this.taskPost();
-//                    AutoClickService.this.performTaskClick();
-//                    AutoClickService.this.Sleep(200);
-//                    AutoClickService.this.performTaskClick();
-//                    AutoClickService.this.lastTradeNo = AutoClickService.this.tradeNo;
-//                    AutoClickService.this.durings = 0;
-//                } else if (AutoClickService.this.tradeNo.equals(AutoClickService.this.lastTradeNo) && knowledgeFragment.started) {
-//                    AutoClickService.this.durings++;
-//                }
-//                if (AutoClickService.this.durings >= 3) {
-//                    AutoClickService.this.performTaskClick();
-//                    AutoClickService.this.Sleep(200);
-//                    AutoClickService.this.performTaskClick();
-//                    AutoClickService.this.durings = 0;
-//                }
-//                if (!knowledgeFragment.started) {
-//                    AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
-//                }
+                if (state == State.WAITING) {
+                    AutoClickService.this.ztLog("===TimerTask=== " + AutoClickService.this.orderScore + " " + knowledgeFragment.started + " tradeNo " + AutoClickService.this.tradeNo + " lastTradeNo " + AutoClickService.this.lastTradeNo + " durings " + AutoClickService.this.durings);
+                    if (AutoClickService.this.orderScore == BigDecimal.valueOf(0L) && knowledgeFragment.started) {
+                        AutoClickService.this.ztLog("===TimerTask===11 " + AutoClickService.this.orderScore + " " + knowledgeFragment.started);
+                        AutoClickService.this.taskPost();
+                        AutoClickService.this.performTaskClick();
+                        AutoClickService.this.Sleep(200);
+                        AutoClickService.this.performTaskClick();
+                        AutoClickService.this.lastTradeNo = AutoClickService.this.tradeNo;
+                        AutoClickService.this.durings = 0;
+                    } else if (AutoClickService.this.tradeNo.equals(AutoClickService.this.lastTradeNo) && knowledgeFragment.started) {
+                        AutoClickService.this.durings++;
+                    }
+                    if (AutoClickService.this.durings >= 3) {
+                        AutoClickService.this.performTaskClick();
+                        AutoClickService.this.Sleep(200);
+                        AutoClickService.this.performTaskClick();
+                        AutoClickService.this.durings = 0;
+                    }
+                    if (!knowledgeFragment.started) {
+                        AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -780,7 +782,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         LogUtils.e(TAG, "taskPost: " + paramsStr);
         HashMap<String, String> paramMap2 = new HashMap<>();
         String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap2.put("sign", sign);
+        paramMap2.put("sign", "dee6ff04e0f7ccdcbd08860f5355a29f");
         paramMap2.put("deviceNo", string);
         String ip = sharedPreferences.getString("IP", "47.242.140.225");
         String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/getOrder?", paramMap2);

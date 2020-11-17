@@ -5,6 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,14 +53,15 @@ public class SettingFragment extends BaseFragment {
 //获得SharedPreferences的实例
         SharedPreferences sp = this.getContext().getSharedPreferences("setting", Context.MODE_PRIVATE);
 //通过key值获取到相应的data，如果没取到，则返回后面的默认值
-        String data = sp.getString("deviceId", "请输入设备ID");
-        etDeviceID.setText(data);
+        //  String data = sp.getString("deviceId", "请输入设备ID");
+        etDeviceID.setText("d23eab596657293008bd9b9d75f935c6");
         String pwd = sp.getString("Password", "");
         etPayPassword.setText(pwd);
         String loginAccount = sp.getString("loginAccount", "");
         etLoginAccount.setText(loginAccount);
         String loginPassword = sp.getString("loginPassword", "");
         etLoginPassword.setText(loginPassword);
+
         //点击事件
         mButton_save.setOnClickListener(new View.OnClickListener() {
             @Override
