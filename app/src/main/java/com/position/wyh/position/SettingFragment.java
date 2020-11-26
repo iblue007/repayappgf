@@ -54,7 +54,7 @@ public class SettingFragment extends BaseFragment {
         SharedPreferences sp = this.getContext().getSharedPreferences("setting", Context.MODE_PRIVATE);
 //通过key值获取到相应的data，如果没取到，则返回后面的默认值
         //  String data = sp.getString("deviceId", "请输入设备ID");
-        etDeviceID.setText("d23eab596657293008bd9b9d75f935c6");
+        etDeviceID.setText("347a9ae9065a8c54b798afde7a08bd73");
         String pwd = sp.getString("Password", "");
         etPayPassword.setText(pwd);
         String loginAccount = sp.getString("loginAccount", "");

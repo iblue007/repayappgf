@@ -65,6 +65,8 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     if (!knowledgeFragment.started) {
                         AutoClickService.this.orderScore = BigDecimal.valueOf(0L);
                     }
+                } else if (state == State.Tranfer) {
+                    AutoClickService.this.taskPostQuery();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -149,7 +151,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     isExists(rootInActiveWindow22, "银行卡", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-                            state = State.Tranfer;
+                            state = State.WAITING;
                             LogUtils.e("======", "======已经登录~~~");
                         }
                     });
@@ -169,7 +171,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                                     findParentClickChild(rootInActiveWindow22, "登录", 2, -1, "", new onCallBack() {
                                                         @Override
                                                         public void onCallBack(Object object) {
-                                                            state = State.Tranfer;
+                                                            state = State.WAITING;
                                                             LogUtils.e("======", "======完成登录~~~");
                                                         }
                                                     });
@@ -182,6 +184,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
                 } else if (state == State.Tranfer) {
+
                     isExists(rootInActiveWindow22, "频繁操作", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
@@ -196,33 +199,33 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             LogUtils.e("======", "=======首页--state:" + state);
                         }
                     });
-
-                    findParentClickChild(rootInActiveWindow22, "转账", 2, -1, "", new onCallBack() {
-                        @Override
-                        public void onCallBack(Object object) {
-                            LogUtils.e("======", "=======转账--state:" + state);
-                        }
-                    });
-
-                    findViewEvent(rootInActiveWindow22, "银行账号转账", 2, "", new onCallBack() {
-                        @Override
-                        public void onCallBack(Object object) {
-                            LogUtils.e("======", "=======银行账号转账--state:" + state);
-                        }
-                    });
-                    findParentClickChild(rootInActiveWindow22, "户名", 1, 2, bankAccount, new onCallBack() {
-                        @Override
-                        public void onCallBack(Object object) {
-                            LogUtils.e("======", "=======户名--state:" + state);
-                        }
-                    });
-                    findParentClickChild(rootInActiveWindow22, "账号", 1, 2, bankCardNo, new onCallBack() {
-                        @Override
-                        public void onCallBack(Object object) {
-                            state = State.Accout;
-                            LogUtils.e("======", "=======账号--state:" + state);
-                        }
-                    });
+//
+//                    findParentClickChild(rootInActiveWindow22, "转账", 2, -1, "", new onCallBack() {
+//                        @Override
+//                        public void onCallBack(Object object) {
+//                            LogUtils.e("======", "=======转账--state:" + state);
+//                        }
+//                    });
+//
+//                    findViewEvent(rootInActiveWindow22, "银行账号转账", 2, "", new onCallBack() {
+//                        @Override
+//                        public void onCallBack(Object object) {
+//                            LogUtils.e("======", "=======银行账号转账--state:" + state);
+//                        }
+//                    });
+//                    findParentClickChild(rootInActiveWindow22, "户名", 1, 2, bankAccount, new onCallBack() {
+//                        @Override
+//                        public void onCallBack(Object object) {
+//                            LogUtils.e("======", "=======户名--state:" + state);
+//                        }
+//                    });
+//                    findParentClickChild(rootInActiveWindow22, "账号", 1, 2, bankCardNo, new onCallBack() {
+//                        @Override
+//                        public void onCallBack(Object object) {
+//                            state = State.Accout;
+//                            LogUtils.e("======", "=======账号--state:" + state);
+//                        }
+//                    });
                 }
                 if (state == State.Accout) {
                     Sleep(2000);
@@ -767,7 +770,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
 
     public void taskPost() {
         SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
-        String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
+        String string = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
         String cPUSerial = SettingFragment.getCPUSerial(this);
         String GetDiskId = SettingFragment.GetDiskId();
 
@@ -782,10 +785,41 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         LogUtils.e(TAG, "taskPost: " + paramsStr);
         HashMap<String, String> paramMap2 = new HashMap<>();
         String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap2.put("sign", "dee6ff04e0f7ccdcbd08860f5355a29f");
+        paramMap2.put("sign", sign);
         paramMap2.put("deviceNo", string);
+//        paramMap2.put("deviceCpu", cPUSerial);
+//        paramMap2.put("deviceCaliche", GetDiskId);
         String ip = sharedPreferences.getString("IP", "47.242.140.225");
         String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/getOrder?", paramMap2);
+        // Log.e(TAG, "taskPost: "+s );
+        //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
+        LogUtils.e(TAG, "taskPost: " + s);
+        handle(s);
+    }
+
+    public void taskPostQuery() {
+        SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
+        String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
+        String cPUSerial = SettingFragment.getCPUSerial(this);
+        String GetDiskId = SettingFragment.GetDiskId();
+
+        HashMap<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("deviceNo", string);
+        paramMap.put("outTradeNo", this.tradeNo);
+
+
+        //String paramsStr = StringUtils.ascriAsc(paramMap);
+        String paramsStr = StringUtils.ascriAsc(paramMap);
+        String sign = "dee6ff04e0f7ccdcbd08860f5355a29f";//Md5Util.MD5Encode(paramsStr);
+        paramMap.put("sign", sign);
+
+        LogUtils.e(TAG, "taskPostQuery: " + paramsStr);
+        HashMap<String, String> paramMap2 = new HashMap<>();
+
+        paramMap2.put("sign", sign);
+        paramMap2.put("deviceNo", string);
+        String ip = sharedPreferences.getString("IP", "47.242.140.225");
+        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/queryOrder?", paramMap2);
         // Log.e(TAG, "taskPost: "+s );
         //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
         LogUtils.e(TAG, "taskPost: " + s);
@@ -850,6 +884,9 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     }
 
     private void handle(String stringBuffer2) {
+        if (TextUtils.isEmpty(stringBuffer2)) {
+            return;
+        }
         JSONObject parseObject = JSONObject.parseObject(stringBuffer2);
         int intValue = parseObject.getIntValue("code");
         if (intValue == 0) {
@@ -868,6 +905,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                 jSONObject.getString("subbranchCity");
                 this.orderScore = jSONObject.getBigDecimal("orderScore");
                 LogUtils.d("GK", "result orderScore = " + this.orderScore);
+                state = State.Tranfer;
             } else {
                 ztLog("task code =   " + intValue);
             }
