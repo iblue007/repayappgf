@@ -175,7 +175,7 @@ public class MainActivity extends FragmentActivity {
         String sign = Md5Util.MD5Encode(paramsStr);
         paramMap2.put("sign", sign);
         paramMap2.put("deviceNo", deviceNo);
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://47.242.140.225/api/order/getOrder?", paramMap2);
+        String s = OkHttpUtil.postSubmitFormsynchronization("http://47.242.229.28/api/order/getOrder?", paramMap2);
 
         Log.e(TAG, "taskPost: " + s);
 

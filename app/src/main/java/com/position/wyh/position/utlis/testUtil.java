@@ -54,7 +54,7 @@ public class testUtil {
                 break;
         }
         eventText = eventText + ":" + eventType;
-        Log.i("======", "======eventText:" + eventText);
+      //  Log.i("======", "======eventText:" + eventText);
 
     }
 }

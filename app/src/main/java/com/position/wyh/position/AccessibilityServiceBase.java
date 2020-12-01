@@ -26,8 +26,8 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected String transMoney = "0·01";
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
-    public AutoClickService.State state = AutoClickService.State.Main;
-    public BigDecimal orderScore = BigDecimal.valueOf(0L);
+    public AutoClickService.State state = AutoClickService.State.Tranfer;
+    public String orderScore = "0·01";//BigDecimal.valueOf(0L);
     public static int CARINT_ZHAOSHAN = 0;//0 招商
     public static int CATINT = CARINT_ZHAOSHAN;
 

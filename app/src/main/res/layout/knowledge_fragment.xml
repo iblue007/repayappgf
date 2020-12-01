@@ -28,6 +28,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="开始自动化测试" />
+
+        <Button
+            android:id="@+id/button_order_get"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="获取订单信息" />
+
+        <Button
+            android:id="@+id/button_order_query"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查询订单状态" />
+
+        <Button
+            android:id="@+id/button_order_complete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="订单完成" />
     </LinearLayout>
 
 
