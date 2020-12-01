@@ -79,7 +79,7 @@ public class MainActivity extends FragmentActivity {
         Uri uri = Uri.parse("content://sms");
         getContentResolver().registerContentObserver(uri, true, mObserver);
         //申请写的权限
-        String[] permissions = {Manifest.permission.READ_SMS};
+        String[] permissions = {Manifest.permission.READ_SMS,Manifest.permission.WRITE_EXTERNAL_STORAGE};
         if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             requestPermissions(permissions, 200);
         }

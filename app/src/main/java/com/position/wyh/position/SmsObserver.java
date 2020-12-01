@@ -17,6 +17,8 @@ public class SmsObserver extends ContentObserver {
     private Context mContext;
     private Handler mHandler;
     private int mReceivedCode = 1;
+    private String mReceivedSmsID = "";
+    private String mReceivedSmsStr = "";
 
     public SmsObserver(Context context, Handler handler, int received_code) {
         super(handler);
@@ -29,7 +31,7 @@ public class SmsObserver extends ContentObserver {
     public void onChange(boolean selfChange, Uri uri) {
         super.onChange(selfChange, uri);
         String code = "";
-        if (uri.toString().equals("content://sms/raw")) {
+        if (uri.toString().contains("content://sms/raw")) {
             return;
         }
         Uri inboxUri = Uri.parse("content://sms/inbox");
@@ -37,20 +39,25 @@ public class SmsObserver extends ContentObserver {
         if (c != null) {
             if (c.moveToFirst()) {
                 String address = c.getString(c.getColumnIndex("address"));
-                String body = c.getString(c.getColumnIndex("body"));
-
-                LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + body);
-                Pattern pattern = Pattern.compile("(\\d{4,6})");
-                Matcher matcher = pattern.matcher(body);
-                if (matcher.find()) {
-                    code = matcher.group(0);
-                    LogUtils.e("验证码》》》" + code);
-                    ClipboardManager cmb = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
-                    cmb.setText(code);
-
-                    mHandler.obtainMessage(mReceivedCode, code).sendToTarget();
+                mReceivedSmsStr = c.getString(c.getColumnIndex("body"));
+                String _id = c.getString(c.getColumnIndex("_id")) + "";
+              //  LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + mReceivedSmsStr + "-_id:" + _id + "-url:" + uri);
+                if (!mReceivedSmsID.equals(_id)) {
+                    LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + mReceivedSmsStr + "-_id:" + _id);
+                } else {
+                    // LogUtils.e("发件人为2222：" + address + "》》》》短信内容为：" + body + "-_id:" + _id);
                 }
-
+                mReceivedSmsID = _id;
+//                Pattern pattern = Pattern.compile("(\\d{4,6})");
+//                Matcher matcher = pattern.matcher(body);
+//                if (matcher.find()) {
+//                    code = matcher.group(0);
+//                    LogUtils.e("验证码》》》" + code);
+//                    ClipboardManager cmb = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+//                    cmb.setText(code);
+//
+//                    mHandler.obtainMessage(mReceivedCode, code).sendToTarget();
+//                }
             }
             c.close();
         }

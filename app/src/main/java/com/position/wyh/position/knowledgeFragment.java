@@ -52,6 +52,7 @@ public class knowledgeFragment extends BaseFragment {
     protected String bankCardNo = "6230580000259907983";
     protected String transMoney = "0·01";
     String tradeNo = "202011290003520177_8e108e3b7ce1e";
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.knowledge_fragment, null, false);
@@ -200,24 +201,20 @@ public class knowledgeFragment extends BaseFragment {
 
     public void taskPost() {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
-        String string = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
+        String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
+        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
         String cPUSerial = SettingFragment.getCPUSerial(getContext());
         String GetDiskId = SettingFragment.GetDiskId();
-        String appid = GetDiskId + "&deviceNo=" + cPUSerial;
         HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", string);
+        paramMap.put("deviceNo", deviceNo);
+        paramMap.put("appid", appId);
 
-        // TODO: 2020/11/28 写成可配置的
-        paramMap.put("appid", "aa12bda5ddc10ee8e547043a532485c6");
-
-        //String paramsStr = StringUtils.ascriAsc(paramMap);
         String paramsStr = StringUtils.ascriAsc(paramMap);
-
         LogUtils.e(TAG, "taskPost: " + paramsStr);
         HashMap<String, String> paramMap2 = new HashMap<>();
         String sign = Md5Util.MD5Encode(paramsStr);
         paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", string);
+        paramMap2.put("deviceNo", deviceNo);
 //        paramMap2.put("deviceCpu", cPUSerial);
 //        paramMap2.put("deviceCaliche", GetDiskId);
         /// String ip = sharedPreferences.getString("IP", "47.242.140.225");
@@ -288,9 +285,12 @@ public class knowledgeFragment extends BaseFragment {
         if (jSONObject != null && jSONObject.isEmpty()) {
             int orderStatus = jSONObject.getInteger("orderStatus");
             LogUtils.e("======", "======orderStatus:" + orderStatus);
+            if(orderStatus == 1){
 
+            }
         }
     }
+
     public String deviceNoftify() {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
         String string = sharedPreferences.getString("deviceId", "112233445566");
@@ -310,7 +310,7 @@ public class knowledgeFragment extends BaseFragment {
         hashMap.put("fee", valueOf);
         String hash = Md5Utils.hash(StringsUtils.sortMapByKeyAsc(hashMap));
         try {
-           // HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("http://" + sharedPreferences.getString("IP", "") + "//api//order//deviceNotify").openConnection();
+            // HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("http://" + sharedPreferences.getString("IP", "") + "//api//order//deviceNotify").openConnection();
             HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("http://47.242.229.28/api//order//deviceNotify").openConnection();
             httpURLConnection.setConnectTimeout(5000);
             httpURLConnection.setRequestMethod("POST");

@@ -25,6 +25,7 @@ public class SettingFragment extends BaseFragment {
     private TextView tvCPU;
     private TextView tvDisk;
     private EditText etDeviceID;
+    private EditText appId;
     private EditText etPayPassword;
     private EditText etLoginPassword;
     private EditText etLoginAccount;
@@ -45,6 +46,7 @@ public class SettingFragment extends BaseFragment {
         tvDisk.setText("硬盘 ID: " + GetDiskId() + "\n\n");
 
         etDeviceID = (EditText) view.findViewById(R.id.editText_deviceID);
+        appId = (EditText) view.findViewById(R.id.editText_app_id);
         etPayPassword = (EditText) view.findViewById(R.id.editText_Password);
         etLoginAccount = (EditText) view.findViewById(R.id.login_account_et);
         etLoginPassword = (EditText) view.findViewById(R.id.login_password_et);
@@ -55,6 +57,7 @@ public class SettingFragment extends BaseFragment {
 //通过key值获取到相应的data，如果没取到，则返回后面的默认值
         //  String data = sp.getString("deviceId", "请输入设备ID");
         etDeviceID.setText("d23eab596657293008bd9b9d75f935c7");
+        appId.setText("aa12bda5ddc10ee8e547043a532485c6");
         String pwd = sp.getString("Password", "");
         etPayPassword.setText(pwd);
         String loginAccount = sp.getString("loginAccount", "");
@@ -68,12 +71,14 @@ public class SettingFragment extends BaseFragment {
             public void onClick(View v) {
 
                 String data = etDeviceID.getText().toString();
+                String appIdStr = appId.getText().toString();
                 //获得SharedPreferences的实例 sp_name是文件名
                 SharedPreferences sp = getActivity().getBaseContext().getSharedPreferences("setting", Context.MODE_PRIVATE);
 //获得Editor 实例
                 SharedPreferences.Editor editor = sp.edit();
 //以key-value形式保存数据
                 editor.putString("deviceId", data);
+                editor.putString("appId", appIdStr);
 
                 data = etPayPassword.getText().toString();
                 editor.putString("Password", data);
