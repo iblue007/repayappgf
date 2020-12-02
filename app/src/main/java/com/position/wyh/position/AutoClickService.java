@@ -27,7 +27,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         /* class com.position.wyh.position.AutoClickService.AnonymousClass1 */
         public void run() {
             try {
-                if (state == State.WAITING) {
+                if (state == State.WAITING || state == State.ShortMessage) {
                     if (!TextUtils.isEmpty(SmsObserver.mReceivedSmsStr) && SmsObserver.mReceivedState == 1) {
                         LogUtils.e("======", "======##################上传短信信息");
                         deviceNoftify();
@@ -38,7 +38,15 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     AutoClickService.this.ztLog("===TimerTask=== " + AutoClickService.this.orderScore + " " + knowledgeFragment.started + " tradeNo " + AutoClickService.this.tradeNo + " lastTradeNo " + AutoClickService.this.lastTradeNo + " durings " + AutoClickService.this.durings);
                     if (AutoClickService.this.orderScore == "" && knowledgeFragment.started) {
                         AutoClickService.this.ztLog("===TimerTask===11 " + AutoClickService.this.orderScore + " " + knowledgeFragment.started);
-                        AutoClickService.this.taskPost();
+                        if (state == State.ShortMessage) {
+                            shortMessageCount = shortMessageCount + 1;
+                            LogUtils.e("=======", "======shortMessageCount:" + shortMessageCount);
+                            if (shortMessageCount == 6) {//6次等于1分钟
+                                state = State.WAITING;
+                            }
+                        } else {
+                            AutoClickService.this.taskPost();
+                        }
                         AutoClickService.this.performTaskClick();
                         AutoClickService.this.Sleep(200);
                         AutoClickService.this.performTaskClick();
@@ -79,7 +87,8 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         SMB,
         WAITING,
         Password,
-        Login
+        Login,
+        ShortMessage;
     }
 
     public void onInterrupt() {
@@ -321,7 +330,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     isExists(rootInActiveWindow22, "转账成功", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-                            state = State.WAITING;
+                            state = State.ShortMessage;
                             performBackClick();
                             Sleep(1000);
                             performBackClick();

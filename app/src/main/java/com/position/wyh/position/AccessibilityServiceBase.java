@@ -29,7 +29,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected String transMoney = "0·01";
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
-    public AutoClickService.State state = AutoClickService.State.Main;
+    public AutoClickService.State state = AutoClickService.State.ShortMessage;
     public String orderScore = "";//BigDecimal.valueOf(0L);0·01//输入的金额
     public static int CARINT_ZHAOSHAN = 0;//0 招商
     public static int CATINT = CARINT_ZHAOSHAN;
@@ -40,6 +40,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     boolean pfczBoolean = false;//频繁操作
     Timer timer = new Timer();
     String tradeNo = "";
+    public int shortMessageCount = 0;//等待短信的时间次数
     boolean transMoneyInput = false;
     boolean transMoneyInputComplete = false;
     // 使用正则表达式, 匹配特殊字符
