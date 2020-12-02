@@ -123,6 +123,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
         testUtil.test(eventType);
         //LogUtils.e("======", "=======onAccessibilityEvent--state:" + state);
+        LogUtils.e("######", "######--state:" + state);
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
             if (AccessibilityServiceBase.CATINT == AccessibilityServiceBase.CARINT_ZHAOSHAN) {
                 if (state == State.Main) {
@@ -189,6 +190,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
                 } else if (state == State.Tranfer) {
+                    pfczBoolean = false;
                     isExists(rootInActiveWindow22, "频繁操作", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
@@ -208,6 +210,13 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         @Override
                         public void onCallBack(Object object) {
                             LogUtils.e("======", "=======转账--state:" + state);
+                            Sleep(1000);
+                            findViewEvent(rootInActiveWindow22, "银行账号转账", 2, "", new onCallBack() {
+                                @Override
+                                public void onCallBack(Object object) {
+                                    LogUtils.e("======", "=======银行账号转账--state:" + state);
+                                }
+                            });
                         }
                     });
 
@@ -226,56 +235,84 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     findParentClickChild(rootInActiveWindow22, "账号", 1, 2, bankCardNo, new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
-                            state = State.Accout;
+                            if (!pfczBoolean) {
+                                state = State.Accout;
+                            }
                             LogUtils.e("======", "=======账号--state:" + state);
                         }
                     });
 
-                }
-                if (state == State.Accout) {
+                } else if (state == State.Accout) {
                     Sleep(2000);
                     SmsObserver.mReceivedSmsStr = "";
                     SmsObserver.mReceivedState = 1;
-                    ThreadUtil.executeMore(new Runnable() {
-                        @Override
-                        public void run() {
-                            AutoClickService.this.taskPostQuery(new onCallBack() {
-                                @Override
-                                public void onCallBack(Object object) {
-                                    findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
-                                        @Override
-                                        public void onCallBack(Object object) {
-                                            DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", orderScore, new onCallBack() {
+                   // orderStatus = 1;
+                    if (orderStatus == 1) {
+                        findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
+                            @Override
+                            public void onCallBack(Object object) {
+                                String orderScoreTemp = orderScore;
+                                orderScoreTemp = getSpecialCharacter(orderScoreTemp, "·");
+                                DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", orderScoreTemp, new onCallBack() {
+                                    @Override
+                                    public void onCallBack(Object object) {
+                                        // String strings = (String) object;
+                                        zhanShanInputMoneyInt = zhanShanInputMoneyInt + 1;
+                                        LogUtils.e("======", "======str:" + zhanShanInputMoneyInt);
+                                        if (zhanShanInputMoneyInt == transMoney.length()) {
+                                            //   state = State.Conform;
+                                            Sleep(2000);
+                                            zhanShanInputMoneyInt = 0;
+                                            findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
                                                 @Override
                                                 public void onCallBack(Object object) {
-                                                    // String strings = (String) object;
-                                                    zhanShanInputMoneyInt = zhanShanInputMoneyInt + 1;
-                                                    LogUtils.e("======", "======str:" + zhanShanInputMoneyInt);
-                                                    if (zhanShanInputMoneyInt == transMoney.length()) {
-                                                        //   state = State.Conform;
-                                                        Sleep(2000);
-                                                        zhanShanInputMoneyInt = 0;
-                                                        findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
-                                                            @Override
-                                                            public void onCallBack(Object object) {
-                                                                DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "下一步", 2, new onCallBack() {
-                                                                    @Override
-                                                                    public void onCallBack(Object object) {
-                                                                        state = State.Password;
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    }
+                                                    Sleep(1000);
+                                                    DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "下一步", 2, new onCallBack() {
+                                                        @Override
+                                                        public void onCallBack(Object object) {
+                                                            state = State.Password;
+                                                            orderStatus = -1;
+                                                        }
+                                                    });
                                                 }
                                             });
-
                                         }
-                                    });
-                                }
-                            });
-                        }
-                    });
+                                    }
+                                });
+
+                            }
+                        });
+                        isExists(rootInActiveWindow22, orderScore, new onCallBack() {
+                            @Override
+                            public void onCallBack(Object object) {
+                                findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
+                                    @Override
+                                    public void onCallBack(Object object) {
+                                        Sleep(1000);
+                                        DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "下一步", 2, new onCallBack() {
+                                            @Override
+                                            public void onCallBack(Object object) {
+                                                state = State.Password;
+                                                orderStatus = -1;
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        ThreadUtil.executeMore(new Runnable() {
+                            @Override
+                            public void run() {
+                                AutoClickService.this.taskPostQuery(new onCallBack() {
+                                    @Override
+                                    public void onCallBack(Object object) {
+                                        orderStatus = 1;
+                                    }
+                                });
+                            }
+                        });
+                    }
                 } else if (state == State.Password) {
                     findViewEvent(rootInActiveWindow22, "继续转账", 2, "", new onCallBack() {
                         @Override
@@ -448,7 +485,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             LogUtils.e("======", "======orderStatus:" + orderStatus);
             if (orderStatus == 1) {
                 if (onCallBack != null) {
-                    onCallBack.onCallBack("");
+                    onCallBack.onCallBack(orderStatus);
                 }
             }
         }
@@ -478,7 +515,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                 this.orderScore = "0·01";
                 //todo:小数点要修改
                 if (orderScoreNormal.contains(".")) {
-                    String orderScorechange = orderScoreNormal.replaceAll(".", "·");
+                    String orderScorechange = getSpecialCharacter(orderScoreNormal, "·");
 
                 }
                 LogUtils.d("GK", "result orderScore = " + this.orderScore);

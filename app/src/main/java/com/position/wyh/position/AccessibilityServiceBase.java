@@ -18,6 +18,8 @@ import com.position.wyh.position.utlis.onCallBack;
 
 import java.math.BigDecimal;
 import java.util.Timer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AccessibilityServiceBase extends AccessibilityService {
 
@@ -34,8 +36,14 @@ public class AccessibilityServiceBase extends AccessibilityService {
     int durings = 0;
     String lastTradeNo = "";
     int changeCount = 0;
+    int orderStatus = -1;//订单状态
+    boolean pfczBoolean = false;//频繁操作
     Timer timer = new Timer();
     String tradeNo = "";
+    boolean transMoneyInput = false;
+    boolean transMoneyInputComplete = false;
+    // 使用正则表达式, 匹配特殊字符
+    public final Pattern pattern = Pattern.compile("[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]");
 
     public void resetData() {
         SmsObserver.mReceivedSmsStr = "";
@@ -330,6 +338,18 @@ public class AccessibilityServiceBase extends AccessibilityService {
         accessibilityNodeInfo.performAction(1);
         accessibilityNodeInfo.performAction(2097152, bundle);
     }
+
+    /**
+     * 把特殊字符全替换成下划线
+     *
+     * @param character
+     * @return
+     */
+    public String getSpecialCharacter(String character, String newChar) {
+        Matcher m = pattern.matcher(character);
+        return m.replaceAll(newChar).trim();
+    }
+
 
     /* access modifiers changed from: private */
     protected void ztLog(String str) {
