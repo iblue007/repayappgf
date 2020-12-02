@@ -1,7 +1,6 @@
 package com.position.wyh.position;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
@@ -12,29 +11,14 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.alibaba.fastjson.JSONObject;
 import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
-import com.position.wyh.position.utlis.Global;
 import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.utlis.SystemUtil;
 import com.position.wyh.position.utlis.ThreadUtil;
 import com.position.wyh.position.utlis.onCallBack;
 import com.position.wyh.position.utlis.testUtil;
-import com.position.wyh.position.viewpagerindicator.Md5Utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Timer;
 import java.util.TimerTask;
 
 public class AutoClickService extends AccessibilityServiceZhanShan {
@@ -246,7 +230,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     Sleep(2000);
                     SmsObserver.mReceivedSmsStr = "";
                     SmsObserver.mReceivedState = 1;
-                   // orderStatus = 1;
+                    // orderStatus = 1;
                     if (orderStatus == 1) {
                         findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
                             @Override
@@ -259,10 +243,9 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                         // String strings = (String) object;
                                         zhanShanInputMoneyInt = zhanShanInputMoneyInt + 1;
                                         LogUtils.e("======", "======str:" + zhanShanInputMoneyInt);
-                                        if (zhanShanInputMoneyInt == transMoney.length()) {
+                                        if (zhanShanInputMoneyInt >= orderScore.length()) {
                                             //   state = State.Conform;
                                             Sleep(2000);
-                                            zhanShanInputMoneyInt = 0;
                                             findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
                                                 @Override
                                                 public void onCallBack(Object object) {
@@ -272,6 +255,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                                         public void onCallBack(Object object) {
                                                             state = State.Password;
                                                             orderStatus = -1;
+                                                            zhanShanInputMoneyInt = 0;
                                                         }
                                                     });
                                                 }
@@ -282,24 +266,22 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
 
                             }
                         });
-                        isExists(rootInActiveWindow22, orderScore, new onCallBack() {
-                            @Override
-                            public void onCallBack(Object object) {
-                                findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
-                                    @Override
-                                    public void onCallBack(Object object) {
-                                        Sleep(1000);
-                                        DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "下一步", 2, new onCallBack() {
-                                            @Override
-                                            public void onCallBack(Object object) {
-                                                state = State.Password;
-                                                orderStatus = -1;
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
+                        if (zhanShanInputMoneyInt >= orderScore.length()) {
+                            findViewClickParent(rootInActiveWindow22, "完成", 3, new onCallBack() {
+                                @Override
+                                public void onCallBack(Object object) {
+                                    Sleep(1000);
+                                    DFSExtLogin(rootInActiveWindow22, "android.widget.Button", "下一步", 2, new onCallBack() {
+                                        @Override
+                                        public void onCallBack(Object object) {
+                                            state = State.Password;
+                                            orderStatus = -1;
+                                            zhanShanInputMoneyInt = 0;
+                                        }
+                                    });
+                                }
+                            });
+                        }
                     } else {
                         ThreadUtil.executeMore(new Runnable() {
                             @Override
@@ -440,22 +422,35 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
 
     public void taskPost() {
         SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
-        String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
-        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", deviceNo);
-        paramMap.put("appid", appId);
+        String OrderDetail = sharedPreferences.getString("OrderDetail", "");
+        if (TextUtils.isEmpty(OrderDetail)) {
+            String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
+            String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
+            HashMap<String, Object> paramMap = new HashMap<String, Object>();
+            paramMap.put("deviceNo", deviceNo);
+            paramMap.put("appid", appId);
 
-        String paramsStr = StringUtils.ascriAsc(paramMap);
-        LogUtils.e(TAG, "taskPost: " + paramsStr);
-        HashMap<String, String> paramMap2 = new HashMap<>();
-        String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", deviceNo);
-        String ip = sharedPreferences.getString("IP", "47.242.229.28");
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
-        Log.e(TAG, "taskPost: " + s);
-        handleGetOrder(s);
+            String paramsStr = StringUtils.ascriAsc(paramMap);
+            LogUtils.e(TAG, "taskPost: " + paramsStr);
+            HashMap<String, String> paramMap2 = new HashMap<>();
+            String sign = Md5Util.MD5Encode(paramsStr);
+            paramMap2.put("sign", sign);
+            paramMap2.put("deviceNo", deviceNo);
+            String ip = sharedPreferences.getString("IP", "47.242.229.28");
+            String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
+            Log.e(TAG, "taskPost: " + s);
+            handleGetOrder(s);
+        } else {
+            JSONObject parseObject = JSONObject.parseObject(OrderDetail);
+            int intValue = parseObject.getIntValue("code");
+            if (intValue == 0) {
+                JSONObject jSONObject = parseObject.getJSONObject("data");
+                if (!jSONObject.isEmpty()) {
+                    LogUtils.e("======", "======do sp stringBuffer2:" + OrderDetail);
+                    parseGetOrderJson(parseObject);
+                }
+            }
+        }
     }
 
     public void taskPostQuery(onCallBack onCallBack) {
@@ -500,25 +495,34 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         if (intValue == 0) {
             JSONObject jSONObject = parseObject.getJSONObject("data");
             if (!jSONObject.isEmpty()) {
-                this.tradeNo = jSONObject.getString("tradeNo");
-                LogUtils.d("GK", "result tradeNo = " + this.tradeNo);
-                jSONObject.getString("bankName");
-                jSONObject.getString("bankCode");
-                this.bankAccount = jSONObject.getString("bankAccount");
-                LogUtils.d("GK", "result bankAccount = " + this.bankAccount);
-                this.bankCardNo = jSONObject.getString("bankCardNo");
-                LogUtils.d("GK", "result bankCardNo = " + this.bankCardNo);
-                jSONObject.getString("subbranchName");
-                jSONObject.getString("subbranchProvince");
-                jSONObject.getString("subbranchCity");
-                String orderScoreNormal = jSONObject.getBigDecimal("orderScore") + "";
-                this.orderScore = "0·01";
-                //todo:小数点要修改
-                if (orderScoreNormal.contains(".")) {
-                    String orderScorechange = getSpecialCharacter(orderScoreNormal, "·");
+                getSharedPreferences("setting", 0).edit().putString("OrderDetail", stringBuffer2).commit();
+                LogUtils.e("======", "======stringBuffer2:" + stringBuffer2);
+                parseGetOrderJson(parseObject);
+            }
+        }
+    }
 
-                }
-                LogUtils.d("GK", "result orderScore = " + this.orderScore);
+    private void parseGetOrderJson(JSONObject jSONObject) {
+        if (!jSONObject.isEmpty()) {
+            this.tradeNo = jSONObject.getString("tradeNo");
+            LogUtils.d("GK", "result tradeNo = " + this.tradeNo);
+            jSONObject.getString("bankName");
+            jSONObject.getString("bankCode");
+            this.bankAccount = jSONObject.getString("bankAccount");
+            LogUtils.d("GK", "result bankAccount = " + this.bankAccount);
+            this.bankCardNo = jSONObject.getString("bankCardNo");
+            LogUtils.d("GK", "result bankCardNo = " + this.bankCardNo);
+            jSONObject.getString("subbranchName");
+            jSONObject.getString("subbranchProvince");
+            jSONObject.getString("subbranchCity");
+            String orderScoreNormal = jSONObject.getBigDecimal("orderScore") + "";
+            this.orderScore = "0.01";
+            //todo:小数点要修改
+            if (orderScoreNormal.contains(".")) {
+                String orderScorechange = getSpecialCharacter(orderScoreNormal, "·");
+
+            }
+            LogUtils.d("GK", "result orderScore = " + this.orderScore);
 //                if (!TextUtils.isEmpty(bankAccount) && !TextUtils.isEmpty(bankCardNo)) {
 //                    if (changeCount % 2 == 0) {
 //                        LogUtils.e("======", "======qqqq111:" + changeCount);
@@ -527,12 +531,8 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
 //                        state = State.Tranfer;
 //                    }
 //                }
-            } else {
-                ztLog("task code =   " + intValue);
-            }
         } else {
-
-            ztLog("task data =   null");
+            // ztLog("task code =   " + intValue);
         }
     }
 

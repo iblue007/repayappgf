@@ -30,7 +30,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
     public AutoClickService.State state = AutoClickService.State.Main;
-    public String orderScore = "";//BigDecimal.valueOf(0L);
+    public String orderScore = "";//BigDecimal.valueOf(0L);0·01//输入的金额
     public static int CARINT_ZHAOSHAN = 0;//0 招商
     public static int CATINT = CARINT_ZHAOSHAN;
     int durings = 0;
@@ -55,6 +55,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
         bankCardNo = "";
         transMoney = "";
         orderScore = "";
+        getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
     }
 
     @Override
