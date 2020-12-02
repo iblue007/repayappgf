@@ -42,6 +42,10 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             shortMessageCount = shortMessageCount + 1;
                             LogUtils.e("=======", "======shortMessageCount:" + shortMessageCount);
                             if (shortMessageCount == 6) {//6次等于1分钟
+                                SmsObserver.mReceivedSmsStr = "没收到短信";
+                                deviceNoftify();
+                                SmsObserver.mReceivedSmsStr = "";
+                                SmsObserver.mReceivedState = -1;
                                 state = State.WAITING;
                             }
                         } else {
