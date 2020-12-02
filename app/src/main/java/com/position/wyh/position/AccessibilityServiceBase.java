@@ -17,6 +17,7 @@ import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.onCallBack;
 
 import java.math.BigDecimal;
+import java.util.Timer;
 
 public class AccessibilityServiceBase extends AccessibilityService {
 
@@ -26,10 +27,27 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected String transMoney = "0·01";
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
-    public AutoClickService.State state = AutoClickService.State.Tranfer;
-    public String orderScore = "0·01";//BigDecimal.valueOf(0L);
+    public AutoClickService.State state = AutoClickService.State.Main;
+    public String orderScore = "";//BigDecimal.valueOf(0L);
     public static int CARINT_ZHAOSHAN = 0;//0 招商
     public static int CATINT = CARINT_ZHAOSHAN;
+    int durings = 0;
+    String lastTradeNo = "";
+    int changeCount = 0;
+    Timer timer = new Timer();
+    String tradeNo = "";
+
+    public void resetData() {
+        SmsObserver.mReceivedSmsStr = "";
+        tradeNo = "";
+        durings = 0;
+        lastTradeNo = "";
+        changeCount = 0;
+        bankAccount = "";
+        bankCardNo = "";
+        transMoney = "";
+        orderScore = "";
+    }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {

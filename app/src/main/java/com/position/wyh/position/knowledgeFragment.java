@@ -51,7 +51,7 @@ public class knowledgeFragment extends BaseFragment {
     protected String bankAccount = "徐群星";
     protected String bankCardNo = "6230580000259907983";
     protected String transMoney = "0·01";
-    String tradeNo = "202011290003520177_8e108e3b7ce1e";
+    String tradeNo = "202011290003520251_21087c1a7854d";
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -203,8 +203,6 @@ public class knowledgeFragment extends BaseFragment {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
         String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
         String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        String cPUSerial = SettingFragment.getCPUSerial(getContext());
-        String GetDiskId = SettingFragment.GetDiskId();
         HashMap<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("deviceNo", deviceNo);
         paramMap.put("appid", appId);
@@ -215,14 +213,9 @@ public class knowledgeFragment extends BaseFragment {
         String sign = Md5Util.MD5Encode(paramsStr);
         paramMap2.put("sign", sign);
         paramMap2.put("deviceNo", deviceNo);
-//        paramMap2.put("deviceCpu", cPUSerial);
-//        paramMap2.put("deviceCaliche", GetDiskId);
-        /// String ip = sharedPreferences.getString("IP", "47.242.140.225");
         String ip = sharedPreferences.getString("IP", "47.242.229.28");
         String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
         Log.e(TAG, "taskPost: " + s);
-        //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
-//         LogUtils.e(TAG, "taskPost: " + s);
         handleGetOrder(s);
     }
 
@@ -258,12 +251,13 @@ public class knowledgeFragment extends BaseFragment {
     }
 
     private void takePostQuery() {
-
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
         String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
+     //  String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
         HashMap<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("deviceNo", string);
         paramMap.put("tradeNo", tradeNo);
+      //  paramMap.put("appId", appId);
         String paramsStr = StringUtils.ascriAsc(paramMap);
         String sign = Md5Util.MD5Encode(paramsStr);
         paramMap.put("sign", sign);
@@ -276,8 +270,6 @@ public class knowledgeFragment extends BaseFragment {
         paramMap2.put("tradeNo", tradeNo);
         String ip = sharedPreferences.getString("IP", "47.242.229.28");
         String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/queryOrder?", paramMap2);
-        // Log.e(TAG, "taskPost: "+s );
-        //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
         LogUtils.e(TAG, "taskPost: " + s);
         JSONObject parseObject = JSONObject.parseObject(s);
         int intValue = parseObject.getIntValue("code");
@@ -285,69 +277,50 @@ public class knowledgeFragment extends BaseFragment {
         if (jSONObject != null && jSONObject.isEmpty()) {
             int orderStatus = jSONObject.getInteger("orderStatus");
             LogUtils.e("======", "======orderStatus:" + orderStatus);
-            if(orderStatus == 1){
+            if (orderStatus == 1) {
 
             }
         }
     }
 
-    public String deviceNoftify() {
+    public void deviceNoftify() {
+        String shortMsg = "测试短信";
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
-        String string = sharedPreferences.getString("deviceId", "112233445566");
-        String cPUSerial = SettingFragment.getCPUSerial(getContext());
-        String GetDiskId = SettingFragment.GetDiskId();
-        Log.d("GK", "deviceNoftify = ");
-        BigDecimal valueOf = BigDecimal.valueOf(0L);
-        String format = new SimpleDateFormat("yyyy-M-d hh:mm:ss").format(new Date());
-        HashMap hashMap = new HashMap();
-        hashMap.put("deviceNo", string);
-        hashMap.put("deviceCpu", cPUSerial);
-        hashMap.put("deviceCaliche", GetDiskId);
-        hashMap.put("tradeNo", this.tradeNo);
-        hashMap.put("transactionalNo", format);
-        hashMap.put("orderStatus", "3");
-        hashMap.put("transferTime", format);
-        hashMap.put("fee", valueOf);
-        String hash = Md5Utils.hash(StringsUtils.sortMapByKeyAsc(hashMap));
-        try {
-            // HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("http://" + sharedPreferences.getString("IP", "") + "//api//order//deviceNotify").openConnection();
-            HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("http://47.242.229.28/api//order//deviceNotify").openConnection();
-            httpURLConnection.setConnectTimeout(5000);
-            httpURLConnection.setRequestMethod("POST");
-            StringBuffer stringBuffer = new StringBuffer();
-            String str = "deviceNo=" + string + "&sign=" + hash + "&remark=" + ("已经成功转账 " + this.bankAccount + " " + this.bankCardNo + " " + this.orderScore + "元") + "&tradeNo=" + this.tradeNo + "&transactionalNo=" + format + "&orderStatus=" + "3" + "&transferTime=" + format + "&fee=" + valueOf + "&transferImg=" + "no Image";
-            Log.d("GK", "data = " + str);
-            httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.getOutputStream().write(str.getBytes());
-            int responseCode = httpURLConnection.getResponseCode();
-            if (responseCode == 200) {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream(), "UTF-8"));
-                while (true) {
-                    String readLine = bufferedReader.readLine();
-                    if (readLine != null) {
-                        stringBuffer.append(readLine);
-                        stringBuffer.append("\r\n");
-                    } else {
-                        bufferedReader.close();
-                        Log.d("GK", "result = " + stringBuffer.toString());
-                        return null;
-                    }
-                }
-            } else {
-                Log.d("GK", "responseCode = " + responseCode);
-                return null;
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        } catch (ProtocolException e2) {
-            e2.printStackTrace();
-            return null;
-        } catch (Exception e3) {
-            e3.printStackTrace();
-            return null;
-        }
+        String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
+        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
+        HashMap<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("deviceNo", string);
+        paramMap.put("tradeNo", tradeNo);
+        paramMap.put("orderStatus", "3");
+        paramMap.put("shortMsg", shortMsg);
+        paramMap.put("appid", appId);
+        String paramsStr = StringUtils.ascriAsc(paramMap);
+        String sign = Md5Util.MD5Encode(paramsStr);
+        paramMap.put("sign", sign);
+
+        LogUtils.e(TAG, "taskPostQuery: " + paramsStr);
+        HashMap<String, String> paramMap2 = new HashMap<>();
+
+        paramMap2.put("sign", sign);
+        paramMap2.put("deviceNo", string);
+        paramMap2.put("tradeNo", tradeNo);
+        paramMap2.put("shortMsg", shortMsg);
+        paramMap2.put("orderStatus", "3");
+        String ip = sharedPreferences.getString("IP", "47.242.229.28");
+        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDeviceNotifyV2?", paramMap2);
+        // Log.e(TAG, "taskPost: "+s );
+        //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
+        LogUtils.e(TAG, "taskPost: " + s);
+//        JSONObject parseObject = JSONObject.parseObject(s);
+//        int intValue = parseObject.getIntValue("code");
+//        JSONObject jSONObject = parseObject.getJSONObject("data");
+//        if (jSONObject != null && jSONObject.isEmpty()) {
+//            int orderStatus = jSONObject.getInteger("orderStatus");
+//            LogUtils.e("======", "======orderStatus:" + orderStatus);
+//            if (orderStatus == 1) {
+//
+//            }
+//        }
     }
 
 }

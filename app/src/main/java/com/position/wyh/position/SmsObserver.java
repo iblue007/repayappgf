@@ -1,16 +1,13 @@
 package com.position.wyh.position;
 
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import com.position.wyh.position.utlis.LogUtils;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SmsObserver extends ContentObserver {
 
@@ -18,7 +15,8 @@ public class SmsObserver extends ContentObserver {
     private Handler mHandler;
     private int mReceivedCode = 1;
     private String mReceivedSmsID = "";
-    private String mReceivedSmsStr = "";
+    public static String mReceivedSmsStr = "";
+    public static int mReceivedState = -1; //-1 不接受，1 接收
 
     public SmsObserver(Context context, Handler handler, int received_code) {
         super(handler);
@@ -30,7 +28,9 @@ public class SmsObserver extends ContentObserver {
     @Override
     public void onChange(boolean selfChange, Uri uri) {
         super.onChange(selfChange, uri);
-        String code = "";
+        if (mReceivedState == -1) {
+            return;
+        }
         if (uri.toString().contains("content://sms/raw")) {
             return;
         }
@@ -41,9 +41,11 @@ public class SmsObserver extends ContentObserver {
                 String address = c.getString(c.getColumnIndex("address"));
                 mReceivedSmsStr = c.getString(c.getColumnIndex("body"));
                 String _id = c.getString(c.getColumnIndex("_id")) + "";
-              //  LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + mReceivedSmsStr + "-_id:" + _id + "-url:" + uri);
+                //  LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + mReceivedSmsStr + "-_id:" + _id + "-url:" + uri);
                 if (!mReceivedSmsID.equals(_id)) {
-                    LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + mReceivedSmsStr + "-_id:" + _id);
+                    if (!TextUtils.isEmpty(mReceivedSmsStr) && mReceivedSmsStr.contains("招商银行")) {
+                        LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + mReceivedSmsStr + "-_id:" + _id);
+                    }
                 } else {
                     // LogUtils.e("发件人为2222：" + address + "》》》》短信内容为：" + body + "-_id:" + _id);
                 }
@@ -61,6 +63,5 @@ public class SmsObserver extends ContentObserver {
             }
             c.close();
         }
-
     }
 }
