@@ -45,13 +45,15 @@ public class knowledgeFragment extends BaseFragment {
     private Button mButton_order_query;
     private Button mButton_order_get;
     private Button mButton_order_complete;
+    private Button mButton_order_clear;
+    private Button mButton_order_save;
     private static String TAG = "MainActivity";
     public static boolean started = false;
     public String orderScore = "";
     protected String bankAccount = "徐群星";
     protected String bankCardNo = "6230580000259907983";
     protected String transMoney = "0·01";
-    String tradeNo = "202011290003520251_21087c1a7854d";
+    String tradeNo = "202012030023290033_0482bdee59da9";
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -66,6 +68,8 @@ public class knowledgeFragment extends BaseFragment {
         mButton_order_get = view.findViewById(R.id.button_order_get);
         mButton_order_query = view.findViewById(R.id.button_order_query);
         mButton_order_complete = view.findViewById(R.id.button_order_complete);
+        mButton_order_clear = view.findViewById(R.id.mButton_order_clear);
+        mButton_order_save = view.findViewById(R.id.mButton_order_save);
         if (started) {
 
             mButton_start.setText("停止自动化测试");
@@ -103,6 +107,19 @@ public class knowledgeFragment extends BaseFragment {
                         deviceNoftify();
                     }
                 });
+            }
+        });
+        mButton_order_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getContext().getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
+            }
+        });
+        mButton_order_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String orderDetail = getContext().getSharedPreferences("setting", 0).getString("OrderDetail", "");
+                LogUtils.e("======", "======orderDetail:" + orderDetail);
             }
         });
         //点击事件
@@ -241,7 +258,6 @@ public class knowledgeFragment extends BaseFragment {
                 jSONObject.getString("subbranchCity");
                 this.orderScore = "0·01";//jSONObject.getBigDecimal("orderScore") + "";
                 LogUtils.d("GK", "result orderScore = " + this.orderScore);
-
             } else {
 
             }
@@ -253,11 +269,11 @@ public class knowledgeFragment extends BaseFragment {
     private void takePostQuery() {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
         String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
-     //  String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
+        //  String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
         HashMap<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("deviceNo", string);
         paramMap.put("tradeNo", tradeNo);
-      //  paramMap.put("appId", appId);
+        //  paramMap.put("appId", appId);
         String paramsStr = StringUtils.ascriAsc(paramMap);
         String sign = Md5Util.MD5Encode(paramsStr);
         paramMap.put("sign", sign);

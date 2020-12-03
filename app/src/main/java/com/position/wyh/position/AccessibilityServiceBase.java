@@ -16,7 +16,6 @@ import android.widget.Toast;
 import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.onCallBack;
 
-import java.math.BigDecimal;
 import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,13 +25,12 @@ public class AccessibilityServiceBase extends AccessibilityService {
     protected static final String TAG = "GK";
     protected String bankAccount = "徐群星";
     protected String bankCardNo = "6230580000259907983";
-    protected String transMoney = "0·01";
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
-    public AutoClickService.State state = AutoClickService.State.ShortMessage;
+    public AutoClickService.State state = AutoClickService.State.Main;
     public String orderScore = "";//BigDecimal.valueOf(0L);0·01//输入的金额
-    public static int CARINT_ZHAOSHAN = 0;//0 招商
-    public static int CATINT = CARINT_ZHAOSHAN;
+    public static int BANK_ZHAOSHAN = 0;//0 招商
+    public static int BANKINT = BANK_ZHAOSHAN;
     int durings = 0;
     String lastTradeNo = "";
     int changeCount = 0;
@@ -43,6 +41,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     public int shortMessageCount = 0;//等待短信的时间次数
     boolean transMoneyInput = false;
     boolean transMoneyInputComplete = false;
+    boolean getOrderData = false;//获取订单信息
     // 使用正则表达式, 匹配特殊字符
     public final Pattern pattern = Pattern.compile("[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]");
 
@@ -54,8 +53,8 @@ public class AccessibilityServiceBase extends AccessibilityService {
         changeCount = 0;
         bankAccount = "";
         bankCardNo = "";
-        transMoney = "";
         orderScore = "";
+        getOrderData = false;
         getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
     }
 

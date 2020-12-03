@@ -33,19 +33,22 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         deviceNoftify();
                         SmsObserver.mReceivedSmsStr = "";
                         SmsObserver.mReceivedState = -1;
+                        shortMessageCount = 0;
+                        state = State.WAITING;
                         return;
                     }
                     AutoClickService.this.ztLog("===TimerTask=== " + AutoClickService.this.orderScore + " " + knowledgeFragment.started + " tradeNo " + AutoClickService.this.tradeNo + " lastTradeNo " + AutoClickService.this.lastTradeNo + " durings " + AutoClickService.this.durings);
-                    if (AutoClickService.this.orderScore == "" && knowledgeFragment.started) {
+                    if (!getOrderData && knowledgeFragment.started) {//还没有请求getOrder  AutoClickService.this.orderScore == ""
                         AutoClickService.this.ztLog("===TimerTask===11 " + AutoClickService.this.orderScore + " " + knowledgeFragment.started);
                         if (state == State.ShortMessage) {
                             shortMessageCount = shortMessageCount + 1;
                             LogUtils.e("=======", "======shortMessageCount:" + shortMessageCount);
-                            if (shortMessageCount == 6) {//6次等于1分钟
+                            if (shortMessageCount >= 6) {//6次等于50秒
                                 SmsObserver.mReceivedSmsStr = "没收到短信";
                                 deviceNoftify();
                                 SmsObserver.mReceivedSmsStr = "";
                                 SmsObserver.mReceivedState = -1;
+                                shortMessageCount = 0;
                                 state = State.WAITING;
                             }
                         } else {
@@ -56,10 +59,10 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         AutoClickService.this.performTaskClick();
                         AutoClickService.this.lastTradeNo = AutoClickService.this.tradeNo;
                         AutoClickService.this.durings = 0;
-                    } else if (AutoClickService.this.tradeNo.equals(AutoClickService.this.lastTradeNo) && knowledgeFragment.started) {
+                    } else if (getOrderData && knowledgeFragment.started) {////请求getOrder后 AutoClickService.this.tradeNo.equals(AutoClickService.this.lastTradeNo)
                         AutoClickService.this.durings++;
                     }
-                    if (AutoClickService.this.durings >= 3) {
+                    if (AutoClickService.this.durings >= 3) {////请求getOrder3个循环后
                         AutoClickService.this.performTaskClick();
                         AutoClickService.this.Sleep(200);
                         AutoClickService.this.performTaskClick();
@@ -71,10 +74,10 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             changeCount = 0;
                         }
                     }
-                    SystemUtil.isBackground(getApplicationContext());
-                    if (!knowledgeFragment.started) {
-                        AutoClickService.this.orderScore = "";//BigDecimal.valueOf(0L);
-                    }
+                    //SystemUtil.isBackground(getApplicationContext());
+//                    if (!knowledgeFragment.started) {
+//                        AutoClickService.this.orderScore = "";//BigDecimal.valueOf(0L);
+//                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -122,7 +125,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         //LogUtils.e("======", "=======onAccessibilityEvent--state:" + state);
         LogUtils.e("######", "######--state:" + state);
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
-            if (AccessibilityServiceBase.CATINT == AccessibilityServiceBase.CARINT_ZHAOSHAN) {
+            if (AccessibilityServiceBase.BANKINT == AccessibilityServiceBase.BANK_ZHAOSHAN) {
                 if (state == State.Main) {
                     isExists(rootInActiveWindow22, "快速找回密码", new onCallBack() {
                         @Override
@@ -276,7 +279,6 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                         }
                                     }
                                 });
-
                             }
                         });
                         if (zhanShanInputMoneyInt >= orderScore.length()) {
@@ -295,7 +297,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                 }
                             });
                         }
-                    } else {
+                    } else if (orderStatus == -1) {
                         ThreadUtil.executeMore(new Runnable() {
                             @Override
                             public void run() {
@@ -307,6 +309,11 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                 });
                             }
                         });
+                    } else {
+                        performBackClick();
+                        Sleep(500);
+                        performBackClick();
+                        state = State.WAITING;
                     }
                 } else if (state == State.Password) {
                     findViewEvent(rootInActiveWindow22, "继续转账", 2, "", new onCallBack() {
@@ -335,6 +342,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         @Override
                         public void onCallBack(Object object) {
                             state = State.ShortMessage;
+                            getOrderData = false;
                             performBackClick();
                             Sleep(1000);
                             performBackClick();
@@ -434,6 +442,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     }
 
     public void taskPost() {
+        getOrderData = true;
         SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
         String OrderDetail = sharedPreferences.getString("OrderDetail", "");
         if (TextUtils.isEmpty(OrderDetail)) {
@@ -460,7 +469,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                 JSONObject jSONObject = parseObject.getJSONObject("data");
                 if (!jSONObject.isEmpty()) {
                     LogUtils.e("======", "======do sp stringBuffer2:" + OrderDetail);
-                    parseGetOrderJson(parseObject);
+                    parseGetOrderJson(jSONObject);
                 }
             }
         }
@@ -510,7 +519,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             if (!jSONObject.isEmpty()) {
                 getSharedPreferences("setting", 0).edit().putString("OrderDetail", stringBuffer2).commit();
                 LogUtils.e("======", "======stringBuffer2:" + stringBuffer2);
-                parseGetOrderJson(parseObject);
+                parseGetOrderJson(jSONObject);
             }
         }
     }
