@@ -440,7 +440,6 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     }
 
     public void taskPost() {
-        getOrderData = true;
         SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
         String OrderDetail = sharedPreferences.getString("OrderDetail", "");
         if (TextUtils.isEmpty(OrderDetail)) {
@@ -523,6 +522,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     }
 
     private void parseGetOrderJson(JSONObject jSONObject) {
+        getOrderData = true;
         if (!jSONObject.isEmpty()) {
             this.tradeNo = jSONObject.getString("tradeNo");
             LogUtils.d("GK", "result tradeNo = " + this.tradeNo);
@@ -536,7 +536,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             jSONObject.getString("subbranchProvince");
             jSONObject.getString("subbranchCity");
             String orderScoreNormal = jSONObject.getBigDecimal("orderScore") + "";
-           // this.orderScore = "0.01";
+            // this.orderScore = "0.01";
             String stripZerostr = Commonutil.stripZeros(orderScoreNormal);
             //todo:小数点要修改
             if (stripZerostr.contains(".")) {

@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
 public class AccessibilityServiceBase extends AccessibilityService {
 
     protected static final String TAG = "GK";
-    protected String bankAccount = "徐群星";
-    protected String bankCardNo = "6230580000259907983";
+    protected String bankAccount = "";
+    protected String bankCardNo = "";
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
     public AutoClickService.State state = AutoClickService.State.Main;
