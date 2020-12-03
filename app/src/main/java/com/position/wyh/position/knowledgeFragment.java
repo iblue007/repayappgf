@@ -33,6 +33,8 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by hadoop on 2017-08-13.
@@ -53,7 +55,7 @@ public class knowledgeFragment extends BaseFragment {
     protected String bankAccount = "徐群星";
     protected String bankCardNo = "6230580000259907983";
     protected String transMoney = "0·01";
-    String tradeNo = "202012030023290033_0482bdee59da9";
+    String tradeNo = "202012030023290131_067aa1e9854a5";
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -71,7 +73,6 @@ public class knowledgeFragment extends BaseFragment {
         mButton_order_clear = view.findViewById(R.id.mButton_order_clear);
         mButton_order_save = view.findViewById(R.id.mButton_order_save);
         if (started) {
-
             mButton_start.setText("停止自动化测试");
         } else {
             mButton_start.setText("开始自动化测试");
@@ -113,13 +114,6 @@ public class knowledgeFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 getContext().getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
-            }
-        });
-        mButton_order_save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String orderDetail = getContext().getSharedPreferences("setting", 0).getString("OrderDetail", "");
-                LogUtils.e("======", "======orderDetail:" + orderDetail);
             }
         });
         //点击事件
@@ -175,6 +169,50 @@ public class knowledgeFragment extends BaseFragment {
 
             }
         });
+        mButton_order_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // String OrderDetail = getContext().getSharedPreferences("setting", 0).getString("OrderDetail", "");
+                String OrderDetail = "{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松\",\"subbranchName\":\"默认\",\"bankCode\":\"0\",\"orderScore\":7.0000,\"tradeNo\":\"202012030023290075_bd407c7442e2d\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
+                LogUtils.e("======", "======onClick-orderDetail:" + OrderDetail);
+                JSONObject parseObject = JSONObject.parseObject(OrderDetail);
+                int intValue = parseObject.getIntValue("code");
+                if (intValue == 0) {
+                    JSONObject jSONObject = parseObject.getJSONObject("data");
+                    if (!jSONObject.isEmpty()) {
+                        LogUtils.e("======", "======do sp stringBuffer2:" + OrderDetail);
+                        parseGetOrderJson(jSONObject);
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void parseGetOrderJson(JSONObject jSONObject) {
+        if (!jSONObject.isEmpty()) {
+            this.tradeNo = jSONObject.getString("tradeNo");
+            LogUtils.d("GK", "result tradeNo = " + this.tradeNo);
+            jSONObject.getString("bankName");
+            jSONObject.getString("bankCode");
+            this.bankAccount = jSONObject.getString("bankAccount");
+            LogUtils.d("GK", "result bankAccount = " + this.bankAccount);
+            this.bankCardNo = jSONObject.getString("bankCardNo");
+            LogUtils.d("GK", "result bankCardNo = " + this.bankCardNo);
+            jSONObject.getString("subbranchName");
+            jSONObject.getString("subbranchProvince");
+            jSONObject.getString("subbranchCity");
+            String orderScoreNormal = "700";//jSONObject.getBigDecimal("orderScore") + "";
+            this.orderScore = "0.01";
+            String stripZerostr = Commonutil.stripZeros(orderScoreNormal);
+            //todo:小数点要修改
+            if (stripZerostr.contains(".")) {
+                String orderScorechange = Commonutil.getSpecialCharacter(stripZerostr, "·");
+                LogUtils.d("GK", "result orderScore = " + orderScorechange);
+            }
+        } else {
+            // ztLog("task code =   " + intValue);
+        }
     }
 
     //判断是否开启辅助功能

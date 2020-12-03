@@ -42,9 +42,6 @@ public class AccessibilityServiceBase extends AccessibilityService {
     boolean transMoneyInput = false;
     boolean transMoneyInputComplete = false;
     boolean getOrderData = false;//获取订单信息
-    // 使用正则表达式, 匹配特殊字符
-    public final Pattern pattern = Pattern.compile("[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]");
-
     public void resetData() {
         SmsObserver.mReceivedSmsStr = "";
         tradeNo = "";
@@ -339,18 +336,6 @@ public class AccessibilityServiceBase extends AccessibilityService {
         accessibilityNodeInfo.performAction(1);
         accessibilityNodeInfo.performAction(2097152, bundle);
     }
-
-    /**
-     * 把特殊字符全替换成下划线
-     *
-     * @param character
-     * @return
-     */
-    public String getSpecialCharacter(String character, String newChar) {
-        Matcher m = pattern.matcher(character);
-        return m.replaceAll(newChar).trim();
-    }
-
 
     /* access modifiers changed from: private */
     protected void ztLog(String str) {

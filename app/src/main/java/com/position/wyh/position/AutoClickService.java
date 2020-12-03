@@ -251,9 +251,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
                             @Override
                             public void onCallBack(Object object) {
-                                String orderScoreTemp = orderScore;
-                                orderScoreTemp = getSpecialCharacter(orderScoreTemp, "·");
-                                DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", orderScoreTemp, new onCallBack() {
+                                DFSPasswordZhaoshan(rootInActiveWindow22, "1", "android.view.View", orderScore, new onCallBack() {
                                     @Override
                                     public void onCallBack(Object object) {
                                         // String strings = (String) object;
@@ -538,12 +536,15 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             jSONObject.getString("subbranchProvince");
             jSONObject.getString("subbranchCity");
             String orderScoreNormal = jSONObject.getBigDecimal("orderScore") + "";
-            this.orderScore = "0.01";
+           // this.orderScore = "0.01";
+            String stripZerostr = Commonutil.stripZeros(orderScoreNormal);
             //todo:小数点要修改
-            if (orderScoreNormal.contains(".")) {
-                String orderScorechange = getSpecialCharacter(orderScoreNormal, "·");
-
+            if (stripZerostr.contains(".")) {
+                orderScore = Commonutil.getSpecialCharacter(stripZerostr, "·");
+            } else {
+                orderScore = stripZerostr;
             }
+            LogUtils.d("GK", "result orderScore = " + orderScore);
             LogUtils.d("GK", "result orderScore = " + this.orderScore);
 //                if (!TextUtils.isEmpty(bankAccount) && !TextUtils.isEmpty(bankCardNo)) {
 //                    if (changeCount % 2 == 0) {
