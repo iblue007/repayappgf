@@ -77,6 +77,13 @@ public class knowledgeFragment extends BaseFragment {
         } else {
             mButton_start.setText("开始自动化测试");
         }
+
+        mButton_order_get.setVisibility(View.GONE);
+        mButton_order_query.setVisibility(View.GONE);
+        mButton_order_complete.setVisibility(View.GONE);
+        mButton_order_clear.setVisibility(View.GONE);
+        mButton_order_save.setVisibility(View.GONE);
+
         mButton_order_get.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
