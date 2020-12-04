@@ -93,7 +93,7 @@ public class MainActivity extends FragmentActivity {
         SmsObserver mObserver = new SmsObserver(this, new Handler());
         Uri uri = Uri.parse("content://sms");
         getContentResolver().registerContentObserver(uri, true, mObserver);
-        requestPermissions(this, new String[]{Manifest.permission.READ_SMS, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.WRITE_EXTERNAL_STORAGE}, null);
+        requestPermissions(this, new String[]{Manifest.permission.READ_SMS, Manifest.permission.WRITE_EXTERNAL_STORAGE}, null);
         requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new RequestPermissionCallBack() {
             @Override
             public void granted() {
@@ -121,12 +121,12 @@ public class MainActivity extends FragmentActivity {
         view.findViewById(R.id.window_manager_iv).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if (FloatWindow.get() != null) {
-//                    FloatWindow.get().hide();
-//                }
-                messageList.add("456456561231");
-                homeTitleBarAdapter.setNewData(messageList);
-                homeTitleBarAdapter.notifyDataSetChanged();
+                if (FloatWindow.get() != null) {
+                    FloatWindow.get().hide();
+                }
+//                messageList.add("456456561231");
+//                homeTitleBarAdapter.setNewData(messageList);
+//                homeTitleBarAdapter.notifyDataSetChanged();
             }
         });
         view.findViewById(R.id.log_message_save).setOnClickListener(new View.OnClickListener() {
@@ -136,6 +136,8 @@ public class MainActivity extends FragmentActivity {
                     Commonutil.delFile(MainActivity.MAIN_TEMP + "logInfo.txt");
                     Commonutil.saveToSDCard(getApplicationContext(), "logInfo.txt", homeTitleBarAdapter.getData().toString());
                     MessageUtils.show(MainActivity.this, "保存成功！");
+                }else {
+                    MessageUtils.show(MainActivity.this, "没有日志可以保存！！！");
                 }
             }
         });
@@ -242,7 +244,7 @@ public class MainActivity extends FragmentActivity {
                 break;
             }
         }
-        if (isAllGranted) {
+        if (isAllGranted && mRequestPermissionCallBack != null) {
             mRequestPermissionCallBack.granted();
             return;
         }
@@ -310,7 +312,7 @@ public class MainActivity extends FragmentActivity {
                         if (homeTitleBarAdapter != null) {
                             messageList.add(messageStr);
                             homeTitleBarAdapter.setNewData(messageList);
-                            homeTitleBarAdapter.notifyDataSetChanged();
+                            homeTitleBarAdapter.notifyItemChanged(homeTitleBarAdapter.getData().size() - 1);
                             recyclerViewMessgeList.scrollToPosition(homeTitleBarAdapter.getData().size() - 1);
                             if (messageList.size() >= 10000) {
                                 messageList.clear();

@@ -509,7 +509,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
             Log.e(TAG, "taskPost: " + s);
             JsonObject jsonObject2 = new JsonObject();
-            jsonObject2.addProperty("message", "获取本地订单信息:" + s);
+            jsonObject2.addProperty("message", "获取接口订单信息:" + s);
             EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
             handleGetOrder(s);
         } else {

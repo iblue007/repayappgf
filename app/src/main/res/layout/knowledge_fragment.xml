@@ -1,13 +1,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#eee"
+    android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    android:background="#eee"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -33,13 +33,13 @@
             android:id="@+id/button_flaot_window"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="开启悬浮窗" />
+            android:text="开启悬浮窗（查看日志需要）" />
 
         <Button
             android:id="@+id/button_permission"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="获取读写权限" />
+            android:text="获取读写权限（数据保存到手机时需要）" />
 
 
         <Button
@@ -65,14 +65,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="清空订单缓存" />
+
         <Button
             android:id="@+id/mButton_order_save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="读取订单缓存数据" />
     </LinearLayout>
-
-
 
 
 </LinearLayout>
