@@ -6,6 +6,7 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.FileUriExposedException;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
@@ -42,6 +43,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     boolean transMoneyInput = false;
     boolean transMoneyInputComplete = false;
     boolean getOrderData = false;//获取订单信息
+
     public void resetData() {
         SmsObserver.mReceivedSmsStr = "";
         tradeNo = "";
@@ -52,7 +54,8 @@ public class AccessibilityServiceBase extends AccessibilityService {
         bankCardNo = "";
         orderScore = "";
         getOrderData = false;
-        getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
+        //getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
+        Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
     }
 
     @Override

@@ -12,17 +12,13 @@ import com.position.wyh.position.utlis.LogUtils;
 public class SmsObserver extends ContentObserver {
 
     private Context mContext;
-    private Handler mHandler;
-    private int mReceivedCode = 1;
     private String mReceivedSmsID = "";
     public static String mReceivedSmsStr = "";
     public static int mReceivedState = -1; //-1 不接受，1 接收
 
-    public SmsObserver(Context context, Handler handler, int received_code) {
+    public SmsObserver(Context context, Handler handler) {
         super(handler);
         mContext = context;
-        mHandler = handler;
-        mReceivedCode = received_code;
     }
 
     @Override

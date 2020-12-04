@@ -30,6 +30,19 @@
             android:text="开始自动化测试" />
 
         <Button
+            android:id="@+id/button_flaot_window"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开启悬浮窗" />
+
+        <Button
+            android:id="@+id/button_permission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="获取读写权限" />
+
+
+        <Button
             android:id="@+id/button_order_get"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -1,12 +1,16 @@
 package com.position.wyh.position;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,25 +20,19 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
+import com.position.wyh.position.utlis.EventBusUtil;
 import com.position.wyh.position.utlis.LogUtils;
+import com.position.wyh.position.utlis.MessageUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
+import com.position.wyh.position.utlis.OnClickItemCallBack;
 import com.position.wyh.position.utlis.ThreadUtil;
-import com.position.wyh.position.viewpagerindicator.Md5Utils;
+import com.position.wyh.position.widget.PermissionTipDialog;
+import com.yhao.floatwindow.FloatWindow;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by hadoop on 2017-08-13.
@@ -44,6 +42,8 @@ public class knowledgeFragment extends BaseFragment {
 
     private Button mButton_start;
     private Button mButton_assit;
+    private Button mButton_float_window;
+    private Button mButton_permission;
     private Button mButton_order_query;
     private Button mButton_order_get;
     private Button mButton_order_complete;
@@ -56,6 +56,7 @@ public class knowledgeFragment extends BaseFragment {
     protected String bankCardNo = "6230580000259907983";
     protected String transMoney = "0·01";
     String tradeNo = "202012030023290131_067aa1e9854a5";
+    boolean floatWindowOpen = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,9 +65,27 @@ public class knowledgeFragment extends BaseFragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        try {
+            if (!FloatWindow.get().isShowing()) {
+                mButton_float_window.setText("开启悬浮窗");
+                floatWindowOpen = false;
+            } else {
+                mButton_float_window.setText("关闭悬浮窗");
+                floatWindowOpen = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     void initView(View view) {
         mButton_start = view.findViewById(R.id.button_start);
         mButton_assit = view.findViewById(R.id.button_assit);
+        mButton_float_window = view.findViewById(R.id.button_flaot_window);
+        mButton_permission = view.findViewById(R.id.button_permission);
         mButton_order_get = view.findViewById(R.id.button_order_get);
         mButton_order_query = view.findViewById(R.id.button_order_query);
         mButton_order_complete = view.findViewById(R.id.button_order_complete);
@@ -84,6 +103,50 @@ public class knowledgeFragment extends BaseFragment {
         mButton_order_clear.setVisibility(View.GONE);
         mButton_order_save.setVisibility(View.GONE);
 
+        mButton_permission.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Commonutil.gotoHuaweiPermission(getContext());
+//                Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
+//                ThreadUtil.executeMore(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
+//                        String OrderDetail = "{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松\",\"subbranchName\":\"默认\",\"bankCode\":\"0\",\"orderScore\":7.0000,\"tradeNo\":\"202012030023290075_bd407c7442e2d\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";//sharedPreferences.getString("OrderDetail", "");
+//                        Commonutil.saveToSDCard(getActivity(), "orderInfo.txt", OrderDetail);
+//                        String readTextFile = Commonutil.readTextFile("orderInfo.txt");
+//                        LogUtils.e("======", "======0000:" + readTextFile);
+//                    }
+//                });
+            }
+        });
+        mButton_float_window.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestPermissions(getContext(), new String[]{Manifest.permission.RECEIVE_SMS}, new MainActivity.RequestPermissionCallBack() {
+                    @Override
+                    public void granted() {
+                        if (FloatWindow.get() != null) {
+                            if (floatWindowOpen) {
+                                FloatWindow.get().hide();
+                                floatWindowOpen = false;
+                                mButton_float_window.setText("开启悬浮窗");
+                            } else {
+                                FloatWindow.get().show();
+                                floatWindowOpen = true;
+                                mButton_float_window.setText("关闭悬浮窗");
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void denied() {
+
+                    }
+                });
+
+            }
+        });
         mButton_order_get.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,14 +190,32 @@ public class knowledgeFragment extends BaseFragment {
         mButton_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("message", "点击开始自动化测试");
+                EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                requestPermissions(getContext(), new String[]{Manifest.permission.READ_SMS, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.WRITE_EXTERNAL_STORAGE}, new MainActivity.RequestPermissionCallBack() {
+                    @Override
+                    public void granted() {
+                        LogUtils.e("======", "======22222");
+                    }
 
+                    @Override
+                    public void denied() {
+                        LogUtils.e("======", "======333333");
+                    }
+                });
+
+                if (!Commonutil.isAccessibilitySettingsOn(getContext())) {
+                    Toast.makeText(getContext(), "请先开启辅助功能", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 String string = getContext().getSharedPreferences("setting", 0).getString("Password", "");
                 String deviceId = getContext().getSharedPreferences("setting", 0).getString("deviceId", "");
                 String loginPassword = getContext().getSharedPreferences("setting", 0).getString("loginPassword", "");
                 String loginAccount = getContext().getSharedPreferences("setting", 0).getString("loginAccount", "");
                 if (TextUtils.isEmpty(string) || TextUtils.isEmpty(loginAccount) ||
                         TextUtils.isEmpty(loginPassword) || TextUtils.isEmpty(string)) {
-                    Toast.makeText(getContext(), "支付密码、登录账号等信息请先完善", 1).show();
+                    Toast.makeText(getContext(), "支付密码、登录账号等信息请先完善", Toast.LENGTH_LONG).show();
                     return;
                 }
                 started = !started;
@@ -149,7 +230,6 @@ public class knowledgeFragment extends BaseFragment {
                             Toast.makeText(getContext(), "未安装", Toast.LENGTH_LONG).show();
                         } else {
                             startActivity(intent);
-
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -166,7 +246,7 @@ public class knowledgeFragment extends BaseFragment {
             public void onClick(View v) {
 
                 //如果没开启，就提醒开启辅助功能
-                if (!isAccessibilitySettingsOn(getContext())) {
+                if (!Commonutil.isAccessibilitySettingsOn(getContext())) {
                     Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
                     startActivity(intent);
                 } else {
@@ -220,45 +300,6 @@ public class knowledgeFragment extends BaseFragment {
         } else {
             // ztLog("task code =   " + intValue);
         }
-    }
-
-    //判断是否开启辅助功能
-    private boolean isAccessibilitySettingsOn(Context mContext) {
-        int accessibilityEnabled = 0;
-        final String service = getActivity().getPackageName() + "/" + AutoClickService.class.getCanonicalName();
-        try {
-            accessibilityEnabled = Settings.Secure.getInt(
-                    mContext.getApplicationContext().getContentResolver(),
-                    android.provider.Settings.Secure.ACCESSIBILITY_ENABLED);
-            Log.v(TAG, "accessibilityEnabled = " + accessibilityEnabled);
-        } catch (Settings.SettingNotFoundException e) {
-            Log.e(TAG, "Error finding setting, default accessibility to not found: "
-                    + e.getMessage());
-        }
-        TextUtils.SimpleStringSplitter mStringColonSplitter = new TextUtils.SimpleStringSplitter(':');
-
-        if (accessibilityEnabled == 1) {
-            Log.v(TAG, "***ACCESSIBILITY IS ENABLED*** -----------------");
-            String settingValue = Settings.Secure.getString(
-                    mContext.getApplicationContext().getContentResolver(),
-                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-            if (settingValue != null) {
-                mStringColonSplitter.setString(settingValue);
-                while (mStringColonSplitter.hasNext()) {
-                    String accessibilityService = mStringColonSplitter.next();
-
-                    Log.v(TAG, "-------------- > accessibilityService :: " + accessibilityService + " " + service);
-                    if (accessibilityService.equalsIgnoreCase(service)) {
-                        Log.v(TAG, "We've found the correct setting - accessibility is switched on!");
-                        return true;
-                    }
-                }
-            }
-        } else {
-            Log.v(TAG, "***ACCESSIBILITY IS DISABLED***");
-        }
-
-        return false;
     }
 
     public void taskPost() {
@@ -382,6 +423,59 @@ public class knowledgeFragment extends BaseFragment {
 //
 //            }
 //        }
+    }
+
+
+    public void requestPermissions(final Context context, final String[] permissions,
+                                   MainActivity.RequestPermissionCallBack callback) {
+        this.mRequestPermissionCallBack = callback;
+        StringBuilder permissionNames = new StringBuilder();
+        for (String s : permissions) {
+            permissionNames = permissionNames.append(s + "\r\n");
+        }
+        //如果所有权限都已授权，则直接返回授权成功,只要有一项未授权，则发起权限请求
+        boolean isAllGranted = true;
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_DENIED) {
+                isAllGranted = false;
+                if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) context, permission)) {
+                    LogUtils.e("======", "======qq2222222222222222222222222222222222");
+                    PermissionTipDialog permissionTipDialog = new PermissionTipDialog(getActivity());
+                    permissionTipDialog.show();
+                    permissionTipDialog.setOnClickItemCallBack(new OnClickItemCallBack() {
+                        @Override
+                        public void onClickCallBack(String... value) {
+                            ActivityCompat.requestPermissions(((Activity) context), permissions, mRequestCode);
+                        }
+                    });
+                } else {
+                    ActivityCompat.requestPermissions(((Activity) context), permissions, mRequestCode);
+                }
+                break;
+            }
+        }
+        if (isAllGranted) {
+            mRequestPermissionCallBack.granted();
+            return;
+        }
+    }
+
+    private final int mRequestCode = 1024;
+    private MainActivity.RequestPermissionCallBack mRequestPermissionCallBack;
+
+    /**
+     * 权限请求结果回调接口
+     */
+    public interface RequestPermissionCallBack {
+        /**
+         * 同意授权
+         */
+        void granted();
+
+        /**
+         * 取消授权
+         */
+        void denied();
     }
 
 }
