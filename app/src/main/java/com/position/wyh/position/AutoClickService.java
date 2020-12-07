@@ -67,7 +67,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     } else if (getOrderData && knowledgeFragment.started) {////请求getOrder后 AutoClickService.this.tradeNo.equals(AutoClickService.this.lastTradeNo)
                         AutoClickService.this.durings++;
                     }
-                    if (AutoClickService.this.durings >= 2) {////请求getOrder3个循环后
+                    if (AutoClickService.this.durings >= 1) {////请求getOrder3个循环后
                         AutoClickService.this.performTaskClick();
                         AutoClickService.this.Sleep(200);
                         AutoClickService.this.performTaskClick();
@@ -161,9 +161,18 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                 @Override
                                 public void onCallBack(Object object) {
                                     state = State.WAITING;
+                                    JsonObject jsonObject = new JsonObject();
+                                    jsonObject.addProperty("message", "已经登录，回到首页，进入等待状态:" + state);
+                                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
                                     LogUtils.e("======", "======已经登录~~~");
                                 }
                             });
+                        }
+                    });
+                    findViewEvent2(rootInActiveWindow22, "请输入密码", 3, "", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            LogUtils.e("======", "======请输入密码click");
                         }
                     });
                     isExists(rootInActiveWindow22, "请输入密码", new onCallBack() {
@@ -189,16 +198,29 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                                                         @Override
                                                         public void onCallBack(Object object) {
                                                             Sleep(2000);
-                                                            findParentClickChild(rootInActiveWindow22, "首页", 2, -1, "", new onCallBack() {
+                                                            isExists(rootInActiveWindow22, "银行卡", new onCallBack() {
                                                                 @Override
                                                                 public void onCallBack(Object object) {
-                                                                    JsonObject jsonObject = new JsonObject();
-                                                                    jsonObject.addProperty("message", "回到首页，进入等待状态:" + state);
-                                                                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
-                                                                    state = State.WAITING;
-                                                                    LogUtils.e("======", "======已经登录~~~");
+                                                                    Sleep(2000);
+                                                                    findParentClickChild(rootInActiveWindow22, "首页", 2, -1, "", new onCallBack() {
+                                                                        @Override
+                                                                        public void onCallBack(Object object) {
+                                                                            state = State.WAITING;
+                                                                            LogUtils.e("======", "======已经登录~~~");
+                                                                            findParentClickChild(rootInActiveWindow22, "首页", 2, -1, "", new onCallBack() {
+                                                                                @Override
+                                                                                public void onCallBack(Object object) {
+                                                                                    JsonObject jsonObject = new JsonObject();
+                                                                                    jsonObject.addProperty("message", "已经登录，回到首页，进入等待状态:" + state);
+                                                                                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                                                                                    LogUtils.e("======", "======已经登录~~~");
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                    });
                                                                 }
                                                             });
+
                                                         }
                                                     });
                                                 }
@@ -243,7 +265,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
                     JsonObject jsonObject2 = new JsonObject();
-                    jsonObject2.addProperty("message", "输入账号等信息:" + state);
+                    jsonObject2.addProperty("message", "转账-输入账号等信息:" + state);
                     EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
                     findViewEvent(rootInActiveWindow22, "银行账号转账", 2, "", new onCallBack() {
                         @Override
@@ -251,12 +273,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             LogUtils.e("======", "=======银行账号转账--state:" + state);
                         }
                     });
-                    findParentClickChild(rootInActiveWindow22, "户名", 1, 2, bankAccount, new onCallBack() {
-                        @Override
-                        public void onCallBack(Object object) {
-                            LogUtils.e("======", "=======户名--state:" + state);
-                        }
-                    });
+
                     findParentClickChild(rootInActiveWindow22, "账号", 1, 2, bankCardNo, new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
@@ -267,14 +284,21 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
 
+                    Sleep(1000);
+                    findParentClickChild(rootInActiveWindow22, "户名", 1, 2, bankAccount, new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            LogUtils.e("======", "=======户名--state:" + state);
+                        }
+                    });
                 } else if (state == State.Accout) {
                     JsonObject jsonObject = new JsonObject();
-                    jsonObject.addProperty("message", "执行输入金额脚本:" + state);
+                    jsonObject.addProperty("message", "转账-输入金额:" + state);
                     EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
                     Sleep(2000);
                     SmsObserver.mReceivedSmsStr = "";
                     SmsObserver.mReceivedState = 1;
-                    // orderStatus = 1;
+//                     orderStatus = 1;
                     if (orderStatus == 1) {
                         findViewEvent(rootInActiveWindow22, "0手续费", 2, "0.1", new onCallBack() {
                             @Override
@@ -343,13 +367,13 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             }
                         });
                     } else {
+                        JsonObject jsonObject2 = new JsonObject();
+                        jsonObject2.addProperty("message", "订单状态不对，进入等待状态:" + state);
+                        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
+                        state = State.WAITING;
                         performBackClick();
                         Sleep(500);
                         performBackClick();
-                        state = State.WAITING;
-                        JsonObject jsonObject2 = new JsonObject();
-                        jsonObject2.addProperty("message", "信息有问题，进入等待状态:" + state);
-                        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
                     }
                 } else if (state == State.Password) {
                     JsonObject jsonObject = new JsonObject();
@@ -491,41 +515,41 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     public void taskPost() {
         SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
 //        String OrderDetail = sharedPreferences.getString("OrderDetail", "");
-        String OrderDetail = Commonutil.readTextFile("orderInfo.txt");
-        if (TextUtils.isEmpty(OrderDetail)) {
-            String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
-            String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-            HashMap<String, Object> paramMap = new HashMap<String, Object>();
-            paramMap.put("deviceNo", deviceNo);
-            paramMap.put("appid", appId);
+        // String OrderDetail = Commonutil.readTextFile("orderInfo.txt");
+        // if (TextUtils.isEmpty(OrderDetail)) {
+        String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
+        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
+        HashMap<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("deviceNo", deviceNo);
+        paramMap.put("appid", appId);
 
-            String paramsStr = StringUtils.ascriAsc(paramMap);
-            LogUtils.e(TAG, "taskPost: " + paramsStr);
-            HashMap<String, String> paramMap2 = new HashMap<>();
-            String sign = Md5Util.MD5Encode(paramsStr);
-            paramMap2.put("sign", sign);
-            paramMap2.put("deviceNo", deviceNo);
-            String ip = sharedPreferences.getString("IP", "47.242.229.28");
-            String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
-            Log.e(TAG, "taskPost: " + s);
-            JsonObject jsonObject2 = new JsonObject();
-            jsonObject2.addProperty("message", "获取接口订单信息:" + s);
-            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
-            handleGetOrder(s);
-        } else {
-            JsonObject jsonObject2 = new JsonObject();
-            jsonObject2.addProperty("message", "获取本地订单信息:" + OrderDetail);
-            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
-            JSONObject parseObject = JSONObject.parseObject(OrderDetail);
-            int intValue = parseObject.getIntValue("code");
-            if (intValue == 0) {
-                JSONObject jSONObject = parseObject.getJSONObject("data");
-                if (!jSONObject.isEmpty()) {
-                    LogUtils.e("======", "======do sp stringBuffer2:" + OrderDetail);
-                    parseGetOrderJson(jSONObject);
-                }
-            }
-        }
+        String paramsStr = StringUtils.ascriAsc(paramMap);
+        LogUtils.e(TAG, "taskPost: " + paramsStr);
+        HashMap<String, String> paramMap2 = new HashMap<>();
+        String sign = Md5Util.MD5Encode(paramsStr);
+        paramMap2.put("sign", sign);
+        paramMap2.put("deviceNo", deviceNo);
+        String ip = sharedPreferences.getString("IP", "47.242.229.28");
+        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
+        Log.e(TAG, "taskPost: " + s);
+        JsonObject jsonObject2 = new JsonObject();
+        jsonObject2.addProperty("message", "获取本地订单信息:" + s);
+        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
+        handleGetOrder(s);
+//        } else {
+//            JsonObject jsonObject2 = new JsonObject();
+//            jsonObject2.addProperty("message", "获取本地订单信息:" + OrderDetail);
+//            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
+//            JSONObject parseObject = JSONObject.parseObject(OrderDetail);
+//            int intValue = parseObject.getIntValue("code");
+//            if (intValue == 0) {
+//                JSONObject jSONObject = parseObject.getJSONObject("data");
+//                if (!jSONObject.isEmpty()) {
+//                    LogUtils.e("======", "======do sp stringBuffer2:" + OrderDetail);
+//                    parseGetOrderJson(jSONObject);
+//                }
+//            }
+//        }
     }
 
     public void taskPostQuery(onCallBack onCallBack) {
@@ -550,19 +574,28 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         String ip = sharedPreferences.getString("IP", "47.242.229.28");
         String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/queryOrder?", paramMap2);
         LogUtils.e(TAG, "taskPost: " + s);
+        JsonObject jsonObject2 = new JsonObject();
+        jsonObject2.addProperty("message", "查询订单状态接口:" + state);
+        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
         JSONObject parseObject = JSONObject.parseObject(s);
         int intValue = parseObject.getIntValue("code");
         JSONObject jSONObject = parseObject.getJSONObject("data");
         if (jSONObject != null && !jSONObject.isEmpty()) {
-            int orderStatus = jSONObject.getInteger("orderStatus");
+            orderStatus = jSONObject.getInteger("orderStatus");
             LogUtils.e("======", "======orderStatus:" + orderStatus);
-            JsonObject jsonObject2 = new JsonObject();
-            jsonObject2.addProperty("message", "订单状态:" + orderStatus);
-            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
+            JsonObject jsonObject3 = new JsonObject();
+            jsonObject3.addProperty("message", "订单状态:" + orderStatus);
+            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject3);
             if (orderStatus == 1) {
                 if (onCallBack != null) {
                     onCallBack.onCallBack(orderStatus);
                 }
+            } else if (orderStatus == 3) {
+                state = State.WAITING;
+                JsonObject jsonObject4 = new JsonObject();
+                jsonObject4.addProperty("message", "订单已经转账过了，不要重复转账:" + state);
+                EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject4);
+                resetData(false);
             }
         }
     }
@@ -577,8 +610,8 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             JSONObject jSONObject = parseObject.getJSONObject("data");
             if (!jSONObject.isEmpty()) {
                 //  getSharedPreferences("setting", 0).edit().putString("OrderDetail", stringBuffer2).commit();
-                Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
-                Commonutil.saveToSDCard(getApplicationContext(), "orderInfo.txt", stringBuffer2);
+//                Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
+//                Commonutil.saveToSDCard(getApplicationContext(), "orderInfo.txt", stringBuffer2);
                 LogUtils.e("======", "======stringBuffer2:" + stringBuffer2);
                 parseGetOrderJson(jSONObject);
             }
@@ -608,6 +641,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             } else {
                 orderScore = stripZerostr;
             }
+
             LogUtils.d("GK", "result orderScore = " + orderScore);
             LogUtils.d("GK", "result orderScore = " + this.orderScore);
 //                if (!TextUtils.isEmpty(bankAccount) && !TextUtils.isEmpty(bankCardNo)) {
@@ -652,7 +686,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         String ip = sharedPreferences.getString("IP", "47.242.229.28");
         String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDeviceNotifyV2?", paramMap2);
         LogUtils.e("======", "======taskPost: " + s);
-        resetData();
+        resetData(true);
     }
 
 }

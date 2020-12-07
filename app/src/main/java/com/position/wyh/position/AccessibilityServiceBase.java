@@ -24,8 +24,8 @@ import java.util.regex.Pattern;
 public class AccessibilityServiceBase extends AccessibilityService {
 
     protected static final String TAG = "GK";
-    protected String bankAccount = "";
-    protected String bankCardNo = "";
+    protected String bankAccount = "";//徐群星
+    protected String bankCardNo = "";//6230580000259907983
     protected int zhanShanInputMoneyInt = 0;
     protected int zhanShanPwdInputInt = 0;
     public AutoClickService.State state = AutoClickService.State.Main;
@@ -44,7 +44,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     boolean transMoneyInputComplete = false;
     boolean getOrderData = false;//获取订单信息
 
-    public void resetData() {
+    public void resetData(boolean del) {
         SmsObserver.mReceivedSmsStr = "";
         tradeNo = "";
         durings = 0;
@@ -54,8 +54,11 @@ public class AccessibilityServiceBase extends AccessibilityService {
         bankCardNo = "";
         orderScore = "";
         getOrderData = false;
+        orderStatus = -1;
         //getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
-        Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
+//        if (del) {
+//            Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
+//        }
     }
 
     @Override
@@ -68,6 +71,33 @@ public class AccessibilityServiceBase extends AccessibilityService {
 
     }
 
+
+    protected void findViewEvent2(AccessibilityNodeInfo accessibilityNodeInfo, String str2, int flag, String inputStr, onCallBack onCallBack) {
+        if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {
+            if (accessibilityNodeInfo.getText() != null) {
+                ztLog("rootInfo=1 " + accessibilityNodeInfo.getText().toString() + "--className:" + accessibilityNodeInfo.getClassName());
+                if (accessibilityNodeInfo.getText().toString().equals(str2)) {
+                    if (flag == 1) {
+                        performInput(accessibilityNodeInfo, inputStr);//13692255330
+                    } else if (flag == 2) {
+                        performClick(accessibilityNodeInfo);
+                    } else if (flag == 3) {
+                        // performInput(accessibilityNodeInfo, "xuqunxing_");//13692255330
+                        performClickExt(accessibilityNodeInfo, str2, false);
+                    }
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(flag);
+                    }
+                    return;
+                } else {
+
+                }
+            }
+            for (int i = 0; i < accessibilityNodeInfo.getChildCount(); i++) {
+                findViewEvent(accessibilityNodeInfo.getChild(i), str2, flag, inputStr, onCallBack);
+            }
+        }
+    }
 
     protected void findViewEvent(AccessibilityNodeInfo accessibilityNodeInfo, String str2, int flag, String inputStr, onCallBack onCallBack) {
         if (accessibilityNodeInfo != null && !TextUtils.isEmpty(accessibilityNodeInfo.getClassName())) {

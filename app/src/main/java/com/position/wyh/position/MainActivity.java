@@ -93,18 +93,7 @@ public class MainActivity extends FragmentActivity {
         SmsObserver mObserver = new SmsObserver(this, new Handler());
         Uri uri = Uri.parse("content://sms");
         getContentResolver().registerContentObserver(uri, true, mObserver);
-        requestPermissions(this, new String[]{Manifest.permission.READ_SMS, Manifest.permission.WRITE_EXTERNAL_STORAGE}, null);
-        requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new RequestPermissionCallBack() {
-            @Override
-            public void granted() {
-                createDefaultDir();
-            }
-
-            @Override
-            public void denied() {
-
-            }
-        });
+        requestPermissions(this, new String[]{Manifest.permission.READ_SMS, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.WRITE_EXTERNAL_STORAGE}, null);
         Global.setContext(this);
         Global.setHandler(new Handler());
         EventBus.getDefault().register(this);
@@ -314,7 +303,7 @@ public class MainActivity extends FragmentActivity {
                             homeTitleBarAdapter.setNewData(messageList);
                             homeTitleBarAdapter.notifyItemChanged(homeTitleBarAdapter.getData().size() - 1);
                             recyclerViewMessgeList.scrollToPosition(homeTitleBarAdapter.getData().size() - 1);
-                            if (messageList.size() >= 10000) {
+                            if (messageList.size() >= 1000) {
                                 messageList.clear();
                             }
                         }
@@ -323,26 +312,6 @@ public class MainActivity extends FragmentActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    /**
-     * 初始化基础目录
-     */
-    public void createDefaultDir() {
-        try {
-            final String baseDir = BASE_DIR;
-            File dir = new File(baseDir);
-            if (!dir.isDirectory()) {
-                dir.mkdirs();
-            }
-            dir = new File(MAIN_TEMP);
-            if (!dir.isDirectory()) {
-                dir.mkdirs();
-            }
-            LogUtils.e("======", "======createDefaultDir");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

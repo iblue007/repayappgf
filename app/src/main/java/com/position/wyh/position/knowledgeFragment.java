@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -24,6 +25,7 @@ import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
 import com.position.wyh.position.utlis.EventBusUtil;
 import com.position.wyh.position.utlis.LogUtils;
+import com.position.wyh.position.utlis.MessageUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.utlis.OnClickItemCallBack;
 import com.position.wyh.position.utlis.ThreadUtil;
@@ -54,6 +56,7 @@ public class knowledgeFragment extends BaseFragment {
     protected String bankCardNo = "6230580000259907983";
     protected String transMoney = "0·01";
     String tradeNo = "202012030023290131_067aa1e9854a5";
+    boolean floatWindowOpen = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -77,6 +80,7 @@ public class knowledgeFragment extends BaseFragment {
         } else {
             mButton_start.setText("开始自动化测试");
         }
+
         mButton_order_get.setVisibility(View.GONE);
         mButton_order_query.setVisibility(View.GONE);
         mButton_order_complete.setVisibility(View.GONE);
@@ -86,7 +90,29 @@ public class knowledgeFragment extends BaseFragment {
         mButton_permission.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Commonutil.gotoHuaweiPermission(getContext());
+                requestPermissions(getContext(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new MainActivity.RequestPermissionCallBack() {
+                    @Override
+                    public void granted() {
+                        createDefaultDir();
+                    }
+
+                    @Override
+                    public void denied() {
+
+                    }
+                });
+                //  Commonutil.gotoHuaweiPermission(getContext());
+//                Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
+//                ThreadUtil.executeMore(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
+//                        String OrderDetail = "{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松\",\"subbranchName\":\"默认\",\"bankCode\":\"0\",\"orderScore\":7.0000,\"tradeNo\":\"202012030023290075_bd407c7442e2d\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";//sharedPreferences.getString("OrderDetail", "");
+//                        Commonutil.saveToSDCard(getActivity(), "orderInfo.txt", OrderDetail);
+//                        String readTextFile = Commonutil.readTextFile("orderInfo.txt");
+//                        LogUtils.e("======", "======0000:" + readTextFile);
+//                    }
+//                });
             }
         });
         mButton_float_window.setOnClickListener(new View.OnClickListener() {
@@ -439,4 +465,23 @@ public class knowledgeFragment extends BaseFragment {
         void denied();
     }
 
+    /**
+     * 初始化基础目录
+     */
+    public void createDefaultDir() {
+        try {
+            final String baseDir = MainActivity.BASE_DIR;
+            File dir = new File(baseDir);
+            if (!dir.isDirectory()) {
+                dir.mkdirs();
+            }
+            dir = new File(MainActivity.MAIN_TEMP);
+            if (!dir.isDirectory()) {
+                dir.mkdirs();
+            }
+            LogUtils.e("======", "======createDefaultDir");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

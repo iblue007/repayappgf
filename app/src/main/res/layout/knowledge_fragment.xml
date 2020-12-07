@@ -33,13 +33,13 @@
             android:id="@+id/button_flaot_window"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="开启悬浮窗（查看日志需要）" />
+            android:text="开启悬浮窗（显示日志时开启）" />
 
         <Button
             android:id="@+id/button_permission"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="获取读写权限（数据保存到手机时需要）" />
+            android:text="获取读写权限（保存日志时开启）" />
 
 
         <Button
