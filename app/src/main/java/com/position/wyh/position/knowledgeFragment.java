@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -44,6 +45,7 @@ public class knowledgeFragment extends BaseFragment {
     private Button mButton_start;
     private Button mButton_assit;
     private Button mButton_float_window;
+    private Button mButton_usage;
     private Button mButton_permission;
     private Button mButton_order_query;
     private Button mButton_order_get;
@@ -70,6 +72,7 @@ public class knowledgeFragment extends BaseFragment {
         mButton_start = view.findViewById(R.id.button_start);
         mButton_assit = view.findViewById(R.id.button_assit);
         mButton_float_window = view.findViewById(R.id.button_flaot_window);
+        mButton_usage = view.findViewById(R.id.button_usage);
         mButton_permission = view.findViewById(R.id.button_permission);
         mButton_order_get = view.findViewById(R.id.button_order_get);
         mButton_order_query = view.findViewById(R.id.button_order_query);
@@ -94,7 +97,7 @@ public class knowledgeFragment extends BaseFragment {
                 requestPermissions(getContext(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new MainActivity.RequestPermissionCallBack() {
                     @Override
                     public void granted() {
-                        MessageUtils.show(getContext(),"权限已获取。");
+                        MessageUtils.show(getContext(), "权限已获取。");
                         createDefaultDir();
                     }
 
@@ -123,6 +126,7 @@ public class knowledgeFragment extends BaseFragment {
                 requestPermissions(getContext(), new String[]{Manifest.permission.SYSTEM_ALERT_WINDOW}, new MainActivity.RequestPermissionCallBack() {
                     @Override
                     public void granted() {
+                        MessageUtils.show(getContext(), "权限已获取。");
                         if (FloatWindow.get() != null) {
                             FloatWindow.get().show();
                         }
@@ -136,6 +140,15 @@ public class knowledgeFragment extends BaseFragment {
 
             }
         });
+        mButton_usage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(
+                        new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS),
+                        100);
+            }
+        });
+
         mButton_order_get.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -169,6 +182,7 @@ public class knowledgeFragment extends BaseFragment {
                 });
             }
         });
+
         mButton_order_clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -41,6 +41,11 @@
             android:layout_height="wrap_content"
             android:text="获取读写权限（保存日志时开启）" />
 
+        <Button
+            android:id="@+id/button_usage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="去勾选应用使用记录权限" />
 
         <Button
             android:id="@+id/button_order_get"

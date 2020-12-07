@@ -29,6 +29,8 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         /* class com.position.wyh.position.AutoClickService.AnonymousClass1 */
         public void run() {
             try {
+                String topApp = SystemUtil.getTopApp(getApplicationContext());
+                LogUtils.e("======", "======##################当前运行的app:"+topApp);
                 if (state == State.WAITING || state == State.ShortMessage) {
                     if (!TextUtils.isEmpty(SmsObserver.mReceivedSmsStr) && SmsObserver.mReceivedState == 1) {
                         LogUtils.e("======", "======##################上传短信信息");

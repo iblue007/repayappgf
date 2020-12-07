@@ -40,6 +40,7 @@ import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.MessageUtils;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.utlis.OnClickItemCallBack;
+import com.position.wyh.position.utlis.SystemUtil;
 import com.position.wyh.position.viewpagerindicator.IconPagerAdapter;
 import com.position.wyh.position.viewpagerindicator.IconTabPageIndicator;
 import com.position.wyh.position.viewpagerindicator.Md5Utils;
@@ -125,7 +126,7 @@ public class MainActivity extends FragmentActivity {
                     Commonutil.delFile(MainActivity.MAIN_TEMP + "logInfo.txt");
                     Commonutil.saveToSDCard(getApplicationContext(), "logInfo.txt", homeTitleBarAdapter.getData().toString());
                     MessageUtils.show(MainActivity.this, "保存成功！");
-                }else {
+                } else {
                     MessageUtils.show(MainActivity.this, "没有日志可以保存！！！");
                 }
             }
