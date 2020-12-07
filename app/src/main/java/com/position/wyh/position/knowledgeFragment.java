@@ -32,6 +32,7 @@ import com.position.wyh.position.utlis.ThreadUtil;
 import com.position.wyh.position.widget.PermissionTipDialog;
 import com.yhao.floatwindow.FloatWindow;
 
+import java.io.File;
 import java.util.HashMap;
 
 /**
