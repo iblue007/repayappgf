@@ -94,6 +94,7 @@ public class knowledgeFragment extends BaseFragment {
                 requestPermissions(getContext(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new MainActivity.RequestPermissionCallBack() {
                     @Override
                     public void granted() {
+                        MessageUtils.show(getContext(),"权限已获取。");
                         createDefaultDir();
                     }
 
