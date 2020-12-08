@@ -11,31 +11,33 @@ import java.util.List;
 
 public class SystemUtil {
 
-    public static boolean isBackground(Context context) {
+    public static boolean getProcessList(Context context) {
         ActivityManager activityManager = (ActivityManager) context
                 .getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager
                 .getRunningAppProcesses();
         for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
-            if (appProcess.processName.equals(context.getPackageName())) {
-                /*
-                BACKGROUND=400 EMPTY=500 FOREGROUND=100
-                GONE=1000 PERCEPTIBLE=130 SERVICE=300 ISIBLE=200
-                 */
-                Log.i(context.getPackageName(), "此appimportace ="
-                        + appProcess.importance
-                        + ",context.getClass().getName()="
-                        + context.getClass().getName());
-                if (appProcess.importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    Log.i(context.getPackageName(), "处于后台"
-                            + appProcess.processName);
-                    return true;
-                } else {
-                    Log.i(context.getPackageName(), "处于前台"
-                            + appProcess.processName);
-                    return false;
-                }
-            }
+
+            LogUtils.e("====", "====" + appProcess.processName);
+//            if (appProcess.processName.equals(context.getPackageName())) {
+//                /*
+//                BACKGROUND=400 EMPTY=500 FOREGROUND=100
+//                GONE=1000 PERCEPTIBLE=130 SERVICE=300 ISIBLE=200
+//                 */
+//                Log.i(context.getPackageName(), "此appimportace ="
+//                        + appProcess.importance
+//                        + ",context.getClass().getName()="
+//                        + context.getClass().getName());
+//                if (appProcess.importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+//                    Log.i(context.getPackageName(), "处于后台"
+//                            + appProcess.processName);
+//                    return true;
+//                } else {
+//                    Log.i(context.getPackageName(), "处于前台"
+//                            + appProcess.processName);
+//                    return false;
+//                }
+//            }
         }
         return false;
     }
@@ -106,11 +108,29 @@ public class SystemUtil {
                 }
                 Log.i("1111", "======top running app is : " + topActivity);
                 return topActivity;
-            }else {
+            } else {
                 return "";
             }
         } else {
             return "";
+        }
+    }
+
+    public static void getTopAppProcess(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            UsageStatsManager m = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+            if (m != null) {
+                long now = System.currentTimeMillis();
+                //获取2秒之内的应用数据
+                List<UsageStats> stats = m.queryUsageStats(UsageStatsManager.INTERVAL_BEST, now - 2 * 1000, now);
+                Log.i("1111", "Running app number in last 60 seconds : " + stats.size());
+                if (stats != null && stats.size() > 0) {
+                    for (UsageStats usageStats : stats) {
+                        String packageName = usageStats.getPackageName();
+                        LogUtils.e("======", "======package:" + packageName);
+                    }
+                }
+            }
         }
     }
 

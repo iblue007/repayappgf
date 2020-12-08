@@ -14,6 +14,7 @@ import com.position.wyh.position.test.Md5Util;
 import com.position.wyh.position.test.StringUtils;
 import com.position.wyh.position.utlis.EventBusUtil;
 import com.position.wyh.position.utlis.LogUtils;
+import com.position.wyh.position.utlis.NetApiUtil;
 import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.utlis.SystemUtil;
 import com.position.wyh.position.utlis.ThreadUtil;
@@ -29,8 +30,8 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         /* class com.position.wyh.position.AutoClickService.AnonymousClass1 */
         public void run() {
             try {
-                String topApp = SystemUtil.getTopApp(getApplicationContext());
-                LogUtils.e("======", "======##################当前运行的app:"+topApp);
+//                String topApp = SystemUtil.getTopApp(getApplicationContext());
+//                LogUtils.e("======", "======##################当前运行的app:"+topApp);
                 if (state == State.WAITING || state == State.ShortMessage) {
                     if (!TextUtils.isEmpty(SmsObserver.mReceivedSmsStr) && SmsObserver.mReceivedState == 1) {
                         LogUtils.e("======", "======##################上传短信信息");
@@ -50,7 +51,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
                             shortMessageCount = shortMessageCount + 1;
                             LogUtils.e("=======", "======shortMessageCount:" + shortMessageCount);
-                            if (shortMessageCount >= 6) {//6次等于50秒
+                            if (shortMessageCount >= 4) {//6次等于25秒
                                 SmsObserver.mReceivedSmsStr = "没收到短信";
                                 deviceNoftify();
                                 SmsObserver.mReceivedSmsStr = "";
@@ -81,10 +82,6 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             changeCount = 0;
                         }
                     }
-                    //SystemUtil.isBackground(getApplicationContext());
-//                    if (!knowledgeFragment.started) {
-//                        AutoClickService.this.orderScore = "";//BigDecimal.valueOf(0L);
-//                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -118,7 +115,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         accessibilityServiceInfo.notificationTimeout = 100;
         accessibilityServiceInfo.flags |= 8;
         setServiceInfo(accessibilityServiceInfo);
-        this.timer.schedule(this.task, 0, 10000);
+        this.timer.schedule(this.task, 0, 5000);
         ztLog("===onServiceConnected===  ");
     }
 
@@ -515,89 +512,42 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     }
 
     public void taskPost() {
-        SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
-//        String OrderDetail = sharedPreferences.getString("OrderDetail", "");
-        // String OrderDetail = Commonutil.readTextFile("orderInfo.txt");
-        // if (TextUtils.isEmpty(OrderDetail)) {
-        String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
-        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", deviceNo);
-        paramMap.put("appid", appId);
-
-        String paramsStr = StringUtils.ascriAsc(paramMap);
-        LogUtils.e(TAG, "taskPost: " + paramsStr);
-        HashMap<String, String> paramMap2 = new HashMap<>();
-        String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", deviceNo);
-        String ip = sharedPreferences.getString("IP", "47.242.229.28");
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
+        String s = NetApiUtil.taskPost(this, getSharedPreferences("setting", 0).getInt("onlyValidAppid", 0));
         Log.e(TAG, "taskPost: " + s);
-        JsonObject jsonObject2 = new JsonObject();
-        jsonObject2.addProperty("message", "获取本地订单信息:" + s);
-        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
-        handleGetOrder(s);
-//        } else {
-//            JsonObject jsonObject2 = new JsonObject();
-//            jsonObject2.addProperty("message", "获取本地订单信息:" + OrderDetail);
-//            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
-//            JSONObject parseObject = JSONObject.parseObject(OrderDetail);
-//            int intValue = parseObject.getIntValue("code");
-//            if (intValue == 0) {
-//                JSONObject jSONObject = parseObject.getJSONObject("data");
-//                if (!jSONObject.isEmpty()) {
-//                    LogUtils.e("======", "======do sp stringBuffer2:" + OrderDetail);
-//                    parseGetOrderJson(jSONObject);
-//                }
-//            }
-//        }
+        if (!TextUtils.isEmpty(s)) {
+            JsonObject jsonObject2 = new JsonObject();
+            jsonObject2.addProperty("message", "获取本地订单信息:" + s);
+            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
+            handleGetOrder(s);
+        }
     }
 
     public void taskPostQuery(onCallBack onCallBack) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("message", "查看订单状态:" + state);
-        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
-        SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
-        String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
-        //  String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", string);
-        paramMap.put("tradeNo", tradeNo);
-        //  paramMap.put("appId", appId);
-        String paramsStr = StringUtils.ascriAsc(paramMap);
-        String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap.put("sign", sign);
-        LogUtils.e(TAG, "taskPostQuery: " + paramsStr);
-        HashMap<String, String> paramMap2 = new HashMap<>();
-        paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", string);
-        paramMap2.put("tradeNo", tradeNo);
-        String ip = sharedPreferences.getString("IP", "47.242.229.28");
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/queryOrder?", paramMap2);
-        LogUtils.e(TAG, "taskPost: " + s);
-        JsonObject jsonObject2 = new JsonObject();
-        jsonObject2.addProperty("message", "查询订单状态接口:" + state);
-        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
-        JSONObject parseObject = JSONObject.parseObject(s);
-        int intValue = parseObject.getIntValue("code");
-        JSONObject jSONObject = parseObject.getJSONObject("data");
-        if (jSONObject != null && !jSONObject.isEmpty()) {
-            orderStatus = jSONObject.getInteger("orderStatus");
-            LogUtils.e("======", "======orderStatus:" + orderStatus);
-            JsonObject jsonObject3 = new JsonObject();
-            jsonObject3.addProperty("message", "订单状态:" + orderStatus);
-            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject3);
-            if (orderStatus == 1) {
-                if (onCallBack != null) {
-                    onCallBack.onCallBack(orderStatus);
+        String s = NetApiUtil.taskQuery(getApplicationContext(), tradeNo, getSharedPreferences("setting", 0).getInt("onlyValidAppid", 0));
+        if (!TextUtils.isEmpty(s)) {
+            JsonObject jsonObject2 = new JsonObject();
+            jsonObject2.addProperty("message", "查询订单状态接口:" + state);
+            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject2);
+            JSONObject parseObject = JSONObject.parseObject(s);
+//        int intValue = parseObject.getIntValue("code");
+            JSONObject jSONObject = parseObject.getJSONObject("data");
+            if (jSONObject != null && !jSONObject.isEmpty()) {
+                orderStatus = jSONObject.getInteger("orderStatus");
+                LogUtils.e("======", "======orderStatus:" + orderStatus);
+                JsonObject jsonObject3 = new JsonObject();
+                jsonObject3.addProperty("message", "订单状态:" + orderStatus);
+                EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject3);
+                if (orderStatus == 1) {
+                    if (onCallBack != null) {
+                        onCallBack.onCallBack(orderStatus);
+                    }
+                } else if (orderStatus == 3) {
+                    state = State.WAITING;
+                    JsonObject jsonObject4 = new JsonObject();
+                    jsonObject4.addProperty("message", "订单已经转账过了，不要重复转账:" + state);
+                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject4);
+                    resetData(false);
                 }
-            } else if (orderStatus == 3) {
-                state = State.WAITING;
-                JsonObject jsonObject4 = new JsonObject();
-                jsonObject4.addProperty("message", "订单已经转账过了，不要重复转账:" + state);
-                EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject4);
-                resetData(false);
             }
         }
     }
@@ -611,9 +561,6 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         if (intValue == 0) {
             JSONObject jSONObject = parseObject.getJSONObject("data");
             if (!jSONObject.isEmpty()) {
-                //  getSharedPreferences("setting", 0).edit().putString("OrderDetail", stringBuffer2).commit();
-//                Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
-//                Commonutil.saveToSDCard(getApplicationContext(), "orderInfo.txt", stringBuffer2);
                 LogUtils.e("======", "======stringBuffer2:" + stringBuffer2);
                 parseGetOrderJson(jSONObject);
             }
@@ -636,26 +583,14 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             jSONObject.getString("subbranchCity");
             String orderScoreNormal = jSONObject.getBigDecimal("orderScore") + "";
             // this.orderScore = "0.01";
-            String stripZerostr = Commonutil.stripZeros(orderScoreNormal);
+            String stripZerostr = "0.01";//Commonutil.stripZeros(orderScoreNormal);
             //todo:小数点要修改
             if (stripZerostr.contains(".")) {
                 orderScore = Commonutil.getSpecialCharacter(stripZerostr, "·");
             } else {
                 orderScore = stripZerostr;
             }
-
-            LogUtils.d("GK", "result orderScore = " + orderScore);
-            LogUtils.d("GK", "result orderScore = " + this.orderScore);
-//                if (!TextUtils.isEmpty(bankAccount) && !TextUtils.isEmpty(bankCardNo)) {
-//                    if (changeCount % 2 == 0) {
-//                        LogUtils.e("======", "======qqqq111:" + changeCount);
-//                    } else {
-//                        LogUtils.e("======", "======qqqq111前台:" + changeCount);
-//                        state = State.Tranfer;
-//                    }
-//                }
         } else {
-            // ztLog("task code =   " + intValue);
         }
     }
 
@@ -666,27 +601,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("message", "确认订单完成:" + state);
         EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
-        SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
-        String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
-        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", string);
-        paramMap.put("tradeNo", tradeNo);
-        paramMap.put("orderStatus", "3");
-        paramMap.put("shortMsg", SmsObserver.mReceivedSmsStr);
-        paramMap.put("appid", appId);
-        String paramsStr = StringUtils.ascriAsc(paramMap);
-        String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap.put("sign", sign);
-        LogUtils.e("======", "taskPostQuery: " + paramsStr);
-        HashMap<String, String> paramMap2 = new HashMap<>();
-        paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", string);
-        paramMap2.put("tradeNo", tradeNo);
-        paramMap2.put("shortMsg", SmsObserver.mReceivedSmsStr);
-        paramMap2.put("orderStatus", "3");
-        String ip = sharedPreferences.getString("IP", "47.242.229.28");
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDeviceNotifyV2?", paramMap2);
+        String s = NetApiUtil.taskComplete(getApplicationContext(), tradeNo, getSharedPreferences("setting", 0).getInt("onlyValidAppid", 0));
         LogUtils.e("======", "======taskPost: " + s);
         resetData(true);
     }

@@ -4,16 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,19 +19,17 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
-import com.position.wyh.position.test.Md5Util;
-import com.position.wyh.position.test.StringUtils;
 import com.position.wyh.position.utlis.EventBusUtil;
 import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.MessageUtils;
-import com.position.wyh.position.utlis.OkHttpUtil;
+import com.position.wyh.position.utlis.NetApiUtil;
 import com.position.wyh.position.utlis.OnClickItemCallBack;
+import com.position.wyh.position.utlis.SystemUtil;
 import com.position.wyh.position.utlis.ThreadUtil;
 import com.position.wyh.position.widget.PermissionTipDialog;
 import com.yhao.floatwindow.FloatWindow;
 
 import java.io.File;
-import java.util.HashMap;
 
 /**
  * Created by hadoop on 2017-08-13.
@@ -52,6 +47,8 @@ public class knowledgeFragment extends BaseFragment {
     private Button mButton_order_complete;
     private Button mButton_order_clear;
     private Button mButton_order_save;
+    private Button mButton_process_exist;
+    private Button mButton_sign_type;
     private static String TAG = "MainActivity";
     public static boolean started = false;
     public String orderScore = "";
@@ -60,6 +57,7 @@ public class knowledgeFragment extends BaseFragment {
     protected String transMoney = "0·01";
     String tradeNo = "202012030023290131_067aa1e9854a5";
     boolean floatWindowOpen = false;
+    int onlyValidAppid = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -79,17 +77,20 @@ public class knowledgeFragment extends BaseFragment {
         mButton_order_complete = view.findViewById(R.id.button_order_complete);
         mButton_order_clear = view.findViewById(R.id.mButton_order_clear);
         mButton_order_save = view.findViewById(R.id.mButton_order_save);
+        mButton_process_exist = view.findViewById(R.id.button_process_exist);
+        mButton_sign_type = view.findViewById(R.id.button_sign_type);
         if (started) {
             mButton_start.setText("停止自动化测试");
         } else {
             mButton_start.setText("开始自动化测试");
         }
 
-        mButton_order_get.setVisibility(View.GONE);
-        mButton_order_query.setVisibility(View.GONE);
-        mButton_order_complete.setVisibility(View.GONE);
-        mButton_order_clear.setVisibility(View.GONE);
-        mButton_order_save.setVisibility(View.GONE);
+//        mButton_sign_type.setVisibility(View.GONE);
+//        mButton_order_get.setVisibility(View.GONE);
+//        mButton_order_query.setVisibility(View.GONE);
+//        mButton_order_complete.setVisibility(View.GONE);
+//        mButton_order_clear.setVisibility(View.GONE);
+//        mButton_order_save.setVisibility(View.GONE);
 
         mButton_permission.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,18 +107,6 @@ public class knowledgeFragment extends BaseFragment {
 
                     }
                 });
-                //  Commonutil.gotoHuaweiPermission(getContext());
-//                Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
-//                ThreadUtil.executeMore(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
-//                        String OrderDetail = "{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松\",\"subbranchName\":\"默认\",\"bankCode\":\"0\",\"orderScore\":7.0000,\"tradeNo\":\"202012030023290075_bd407c7442e2d\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";//sharedPreferences.getString("OrderDetail", "");
-//                        Commonutil.saveToSDCard(getActivity(), "orderInfo.txt", OrderDetail);
-//                        String readTextFile = Commonutil.readTextFile("orderInfo.txt");
-//                        LogUtils.e("======", "======0000:" + readTextFile);
-//                    }
-//                });
             }
         });
         mButton_float_window.setOnClickListener(new View.OnClickListener() {
@@ -149,13 +138,28 @@ public class knowledgeFragment extends BaseFragment {
             }
         });
 
+        mButton_process_exist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SystemUtil.getTopAppProcess(getContext());
+            }
+        });
+
+        mButton_sign_type.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestSignType();
+            }
+        });
+
         mButton_order_get.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ThreadUtil.executeMore(new Runnable() {
                     @Override
                     public void run() {
-                        taskPost();
+                        String s = NetApiUtil.taskPost(getContext(), onlyValidAppid);
+                        handleGetOrder(s);
                     }
                 });
             }
@@ -166,7 +170,15 @@ public class knowledgeFragment extends BaseFragment {
                 ThreadUtil.executeMore(new Runnable() {
                     @Override
                     public void run() {
-                        takePostQuery();
+                        String s = NetApiUtil.taskQuery(getContext(), tradeNo, onlyValidAppid);
+                        LogUtils.e(TAG, "taskPost: " + s);
+                        JSONObject parseObject = JSONObject.parseObject(s);
+                        int intValue = parseObject.getIntValue("code");
+                        JSONObject jSONObject = parseObject.getJSONObject("data");
+                        if (jSONObject != null && jSONObject.isEmpty()) {
+                            int orderStatus = jSONObject.getInteger("orderStatus");
+                            LogUtils.e("======", "======orderStatus:" + orderStatus);
+                        }
                     }
                 });
             }
@@ -177,7 +189,7 @@ public class knowledgeFragment extends BaseFragment {
                 ThreadUtil.executeMore(new Runnable() {
                     @Override
                     public void run() {
-                        deviceNoftify();
+                        NetApiUtil.taskComplete(getContext(), tradeNo, onlyValidAppid);
                     }
                 });
             }
@@ -189,6 +201,7 @@ public class knowledgeFragment extends BaseFragment {
                 getContext().getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
             }
         });
+
         //点击事件
         mButton_start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -276,7 +289,26 @@ public class knowledgeFragment extends BaseFragment {
                 }
             }
         });
+        requestSignType();
+    }
 
+    private void requestSignType() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("message", "请求获取设备签名方式");
+        EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+        ThreadUtil.executeMore(new Runnable() {
+            @Override
+            public void run() {
+                String s = NetApiUtil.getSignType(getContext());
+                if (!TextUtils.isEmpty(s)) {
+                    JSONObject parseObject = JSONObject.parseObject(s);
+                    JSONObject jSONObject = parseObject.getJSONObject("data");
+                    onlyValidAppid = jSONObject.getIntValue("onlyValidAppid");
+                    getContext().getSharedPreferences("setting", 0).edit().putInt("onlyValidAppid", onlyValidAppid).commit();
+                    LogUtils.e("======", "======onlyValidAppid:" + onlyValidAppid);
+                }
+            }
+        });
     }
 
     private void parseGetOrderJson(JSONObject jSONObject) {
@@ -305,26 +337,6 @@ public class knowledgeFragment extends BaseFragment {
         }
     }
 
-    public void taskPost() {
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
-        String deviceNo = sharedPreferences.getString("deviceId", "347a9ae9065a8c54b798afde7a08bd73");
-        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", deviceNo);
-        paramMap.put("appid", appId);
-
-        String paramsStr = StringUtils.ascriAsc(paramMap);
-        LogUtils.e(TAG, "taskPost: " + paramsStr);
-        HashMap<String, String> paramMap2 = new HashMap<>();
-        String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", deviceNo);
-        String ip = sharedPreferences.getString("IP", "47.242.229.28");
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDevGetOrder?", paramMap2);
-        Log.e(TAG, "taskPost: " + s);
-        handleGetOrder(s);
-    }
-
     private void handleGetOrder(String stringBuffer2) {
         if (TextUtils.isEmpty(stringBuffer2)) {
             return;
@@ -346,7 +358,7 @@ public class knowledgeFragment extends BaseFragment {
                 jSONObject.getString("subbranchProvince");
                 jSONObject.getString("subbranchCity");
                 this.orderScore = "0·01";//jSONObject.getBigDecimal("orderScore") + "";
-                LogUtils.d("GK", "result orderScore = " + this.orderScore);
+                LogUtils.d("======", "====== tradeNo：" + this.tradeNo);
             } else {
 
             }
@@ -354,80 +366,6 @@ public class knowledgeFragment extends BaseFragment {
 
         }
     }
-
-    private void takePostQuery() {
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
-        String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
-        //  String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", string);
-        paramMap.put("tradeNo", tradeNo);
-        //  paramMap.put("appId", appId);
-        String paramsStr = StringUtils.ascriAsc(paramMap);
-        String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap.put("sign", sign);
-
-        LogUtils.e(TAG, "taskPostQuery: " + paramsStr);
-        HashMap<String, String> paramMap2 = new HashMap<>();
-
-        paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", string);
-        paramMap2.put("tradeNo", tradeNo);
-        String ip = sharedPreferences.getString("IP", "47.242.229.28");
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/queryOrder?", paramMap2);
-        LogUtils.e(TAG, "taskPost: " + s);
-        JSONObject parseObject = JSONObject.parseObject(s);
-        int intValue = parseObject.getIntValue("code");
-        JSONObject jSONObject = parseObject.getJSONObject("data");
-        if (jSONObject != null && jSONObject.isEmpty()) {
-            int orderStatus = jSONObject.getInteger("orderStatus");
-            LogUtils.e("======", "======orderStatus:" + orderStatus);
-            if (orderStatus == 1) {
-
-            }
-        }
-    }
-
-    public void deviceNoftify() {
-        String shortMsg = "测试短信";
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences("setting", 0);
-        String string = sharedPreferences.getString("deviceId", "d23eab596657293008bd9b9d75f935c6");
-        String appId = sharedPreferences.getString("appId", "aa12bda5ddc10ee8e547043a532485c6");
-        HashMap<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("deviceNo", string);
-        paramMap.put("tradeNo", tradeNo);
-        paramMap.put("orderStatus", "3");
-        paramMap.put("shortMsg", shortMsg);
-        paramMap.put("appid", appId);
-        String paramsStr = StringUtils.ascriAsc(paramMap);
-        String sign = Md5Util.MD5Encode(paramsStr);
-        paramMap.put("sign", sign);
-
-        LogUtils.e(TAG, "taskPostQuery: " + paramsStr);
-        HashMap<String, String> paramMap2 = new HashMap<>();
-
-        paramMap2.put("sign", sign);
-        paramMap2.put("deviceNo", string);
-        paramMap2.put("tradeNo", tradeNo);
-        paramMap2.put("shortMsg", shortMsg);
-        paramMap2.put("orderStatus", "3");
-        String ip = sharedPreferences.getString("IP", "47.242.229.28");
-        String s = OkHttpUtil.postSubmitFormsynchronization("http://" + ip + "/api/order/appDeviceNotifyV2?", paramMap2);
-        // Log.e(TAG, "taskPost: "+s );
-        //  String s="{\"msg\":\"操作成功\",\"code\":0,\"data\":{\"bankAccount\":\"刘万松11\",\"subbranchName\":\"江苏省-盐城分行\",\"bankCode\":\"BOCOM\",\"orderScore\":10.0,\"tradeNo\":\"202011051935360189_87cf2c55ef7e5\",\"bankCardNo\":\"6222623290003068945\",\"subbranchCity\":null,\"bankName\":\"交通银行\",\"subbranchProvince\":\"默认\"}}";
-        LogUtils.e(TAG, "taskPost: " + s);
-//        JSONObject parseObject = JSONObject.parseObject(s);
-//        int intValue = parseObject.getIntValue("code");
-//        JSONObject jSONObject = parseObject.getJSONObject("data");
-//        if (jSONObject != null && jSONObject.isEmpty()) {
-//            int orderStatus = jSONObject.getInteger("orderStatus");
-//            LogUtils.e("======", "======orderStatus:" + orderStatus);
-//            if (orderStatus == 1) {
-//
-//            }
-//        }
-    }
-
 
     public void requestPermissions(final Context context, final String[] permissions,
                                    MainActivity.RequestPermissionCallBack callback) {
