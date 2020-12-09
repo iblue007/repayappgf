@@ -122,6 +122,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     @RequiresApi(api = 18)
     public void onAccessibilityEvent(final AccessibilityEvent accessibilityEvent) {
         int eventType = accessibilityEvent.getEventType();
+        foregroundPackageName = accessibilityEvent.getPackageName().toString();
         String charSequence = accessibilityEvent.getPackageName().toString();
         String charSequence2 = accessibilityEvent.getClassName().toString();
         final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();

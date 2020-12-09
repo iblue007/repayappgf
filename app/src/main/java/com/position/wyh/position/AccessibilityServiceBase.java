@@ -43,6 +43,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
     boolean transMoneyInput = false;
     boolean transMoneyInputComplete = false;
     boolean getOrderData = false;//获取订单信息
+    public static String foregroundPackageName;
 
     public void resetData(boolean del) {
         SmsObserver.mReceivedSmsStr = "";

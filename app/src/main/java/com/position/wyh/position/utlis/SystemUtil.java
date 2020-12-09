@@ -4,8 +4,13 @@ import android.app.ActivityManager;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
+
+import com.position.wyh.position.AccessibilityServiceBase;
 
 import java.util.List;
 
@@ -134,4 +139,49 @@ public class SystemUtil {
         }
     }
 
+    /**
+     * 检测一个android程序是否在运行
+     *
+     * @param context
+     * @param PackageName
+     * @return
+     */
+    public static boolean isServiceStarted(Context context, String PackageName) {
+        //<uses-permission android:name="android.permission.GET_TASKS"/>
+        //https://crazier9527.iteye.com/blog/1476134
+        boolean isStarted = false;
+        try {
+            ActivityManager mActivityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            int intGetTastCounter = 1000;
+            List<ActivityManager.RunningServiceInfo> mRunningService = mActivityManager.getRunningServices(intGetTastCounter);
+            for (ActivityManager.RunningServiceInfo amService : mRunningService) {
+                LogUtils.e("======", "======comPackage:" + amService.service.getPackageName());
+                if (0 == amService.service.getPackageName().compareTo(PackageName)) {
+                    isStarted = true;
+                    break;
+                }
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+        return isStarted;
+    }
+
+    public static void getRunningApp(Context context) {
+        PackageManager localPackageManager = context.getPackageManager();
+        List localList = localPackageManager.getInstalledPackages(0);
+        for (int i = 0; i < localList.size(); i++) {
+            PackageInfo localPackageInfo1 = (PackageInfo) localList.get(i);
+            String str1 = localPackageInfo1.packageName.split(":")[0];
+            if (((ApplicationInfo.FLAG_SYSTEM & localPackageInfo1.applicationInfo.flags) == 0)
+                    && ((ApplicationInfo.FLAG_UPDATED_SYSTEM_APP & localPackageInfo1.applicationInfo.flags) == 0)
+                    && ((ApplicationInfo.FLAG_STOPPED & localPackageInfo1.applicationInfo.flags) == 0)) {
+                Log.e("======", "======:" + str1);
+            }
+        }
+    }
+
+    public static boolean isForegroundPkgViaDetectionService(String packageName) {
+        return packageName.equals(AccessibilityServiceBase.foregroundPackageName);
+    }
 }
