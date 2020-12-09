@@ -36,7 +36,7 @@
         <service
             android:name=".AutoClickService"
             android:exported="false"
-            android:label="自动点击Demo"
+            android:label="转账助手"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
