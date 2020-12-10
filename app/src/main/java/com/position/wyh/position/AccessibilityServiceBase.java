@@ -2,6 +2,9 @@ package com.position.wyh.position;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
+import android.content.ComponentName;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -43,7 +46,8 @@ public class AccessibilityServiceBase extends AccessibilityService {
     boolean transMoneyInput = false;
     boolean transMoneyInputComplete = false;
     boolean getOrderData = false;//获取订单信息
-    public static String foregroundPackageName;
+    public static String foregroundPackageName = "";
+    public int leaveTime = 0;
 
     public void resetData(boolean del) {
         SmsObserver.mReceivedSmsStr = "";
@@ -56,6 +60,7 @@ public class AccessibilityServiceBase extends AccessibilityService {
         orderScore = "";
         getOrderData = false;
         orderStatus = -1;
+        leaveTime = 0;
         //getSharedPreferences("setting", 0).edit().putString("OrderDetail", "").commit();
 //        if (del) {
 //            Commonutil.delFile(MainActivity.MAIN_TEMP + "orderInfo.txt");
@@ -388,6 +393,14 @@ public class AccessibilityServiceBase extends AccessibilityService {
         try {
             Thread.sleep((long) i);
         } catch (Exception unused) {
+        }
+    }
+
+    protected ActivityInfo tryGetActivity(ComponentName componentName) {
+        try {
+            return getPackageManager().getActivityInfo(componentName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
         }
     }
 }

@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">自动转账助手</string>
-    <string name="accessibility_description">自动支付测试</string>
+    <string name="accessibility_description">自动转账</string>
 
 
     <string name="corelib_permission_tip_str">为保证您正常、安全地使用app，请允许获取相关权限，否则将影响部分功能的正常使用。</string>

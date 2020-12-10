@@ -1,7 +1,7 @@
 package com.position.wyh.position;
 
-import android.accessibilityservice.AccessibilityServiceInfo;
-import android.content.SharedPreferences;
+import android.content.ComponentName;
+import android.content.pm.ActivityInfo;
 import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,18 +10,13 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
-import com.position.wyh.position.test.Md5Util;
-import com.position.wyh.position.test.StringUtils;
 import com.position.wyh.position.utlis.EventBusUtil;
 import com.position.wyh.position.utlis.LogUtils;
 import com.position.wyh.position.utlis.NetApiUtil;
-import com.position.wyh.position.utlis.OkHttpUtil;
 import com.position.wyh.position.utlis.SystemUtil;
 import com.position.wyh.position.utlis.ThreadUtil;
 import com.position.wyh.position.utlis.onCallBack;
-import com.position.wyh.position.utlis.testUtil;
 
-import java.util.HashMap;
 import java.util.TimerTask;
 
 public class AutoClickService extends AccessibilityServiceZhanShan {
@@ -30,8 +25,11 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         /* class com.position.wyh.position.AutoClickService.AnonymousClass1 */
         public void run() {
             try {
-//                String topApp = SystemUtil.getTopApp(getApplicationContext());
-//                LogUtils.e("======", "======##################当前运行的app:"+topApp);
+                String topApp = SystemUtil.getTopApp(getApplicationContext());
+                if (!foregroundPackageName.equals("cmb.pb")) {
+                    leaveTime++;
+                }
+                LogUtils.e("======", "##################当前leaveTime:" + leaveTime + "--topApp:" + topApp);
                 if (state == State.WAITING || state == State.ShortMessage) {
                     if (!TextUtils.isEmpty(SmsObserver.mReceivedSmsStr) && SmsObserver.mReceivedState == 1) {
                         LogUtils.e("======", "======##################上传短信信息");
@@ -99,22 +97,15 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         WAITING,
         Password,
         Login,
-        ShortMessage;
+        ShortMessage,
+        NONE
     }
 
     public void onInterrupt() {
     }
 
-    /* access modifiers changed from: protected */
     public void onServiceConnected() {
         super.onServiceConnected();
-        AccessibilityServiceInfo accessibilityServiceInfo = new AccessibilityServiceInfo();
-        accessibilityServiceInfo.eventTypes = -1;
-        accessibilityServiceInfo.feedbackType = 16;
-        accessibilityServiceInfo.packageNames = new String[]{"com.gotokeep.keep", "com.cgbchina.xpt", "com.sinovatech.unicom.ui", "com.tencent.mm", "cmb.pb"};
-        accessibilityServiceInfo.notificationTimeout = 100;
-        accessibilityServiceInfo.flags |= 8;
-        setServiceInfo(accessibilityServiceInfo);
         this.timer.schedule(this.task, 0, 5000);
         ztLog("===onServiceConnected===  ");
     }
@@ -122,13 +113,18 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
     @RequiresApi(api = 18)
     public void onAccessibilityEvent(final AccessibilityEvent accessibilityEvent) {
         int eventType = accessibilityEvent.getEventType();
-        foregroundPackageName = accessibilityEvent.getPackageName().toString();
-        String charSequence = accessibilityEvent.getPackageName().toString();
-        String charSequence2 = accessibilityEvent.getClassName().toString();
-        final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
-        testUtil.test(eventType);
-        //LogUtils.e("======", "=======onAccessibilityEvent--state:" + state);
         LogUtils.e("######", "######--state:" + state);
+        final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
+        String className = accessibilityEvent.getClassName().toString();
+        if (TextUtils.isEmpty(accessibilityEvent.getPackageName())) {
+            return;
+        }
+        AppForgroundSet(accessibilityEvent, className);
+        if (state == State.NONE) {
+            return;
+        }
+//        testUtil.test(eventType);
+
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
             if (AccessibilityServiceBase.BANKINT == AccessibilityServiceBase.BANK_ZHAOSHAN) {
                 if (state == State.Main) {
@@ -422,6 +418,33 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                 jsonObject.addProperty("message", "等待状态:" + state);
                 EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
                 LogUtils.e("======", "=======等待--state:" + state);
+            }
+        }
+    }
+
+    private void AppForgroundSet(AccessibilityEvent accessibilityEvent, String className) {
+        if (knowledgeFragment.started) {
+            foregroundPackageName = accessibilityEvent.getPackageName().toString();
+            if (foregroundPackageName.equals("cmb.pb")) {
+                if (state == State.NONE) {
+                    LogUtils.e("######", "######!!!app重新回到首页");
+                    ComponentName componentName = new ComponentName(accessibilityEvent.getPackageName().toString(),
+                            accessibilityEvent.getClassName().toString());
+                    ActivityInfo activityInfo = tryGetActivity(componentName);
+                    boolean isActivity = activityInfo != null;
+                    if (isActivity && componentName.flattenToShortString().equals("cmb.pb/.app.mainframe.container.PBMainActivity")) {
+                        LogUtils.e("======", "======ActivityName:" + componentName.flattenToShortString());
+                        state = State.Main;
+                        leaveTime = 0;
+                    }
+                }
+            }
+            if (leaveTime >= 5) {
+                LogUtils.e("######", "######当前app长时间不在首页显示:" + leaveTime + "--foregroundPackageName:" + foregroundPackageName);
+                state = State.NONE;
+                resetData(true);
+            } else {
+                LogUtils.e("######", "######当前app正常运行:" + leaveTime + "--foregroundPackageName:" + foregroundPackageName);
             }
         }
     }
