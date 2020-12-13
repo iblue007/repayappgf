@@ -372,12 +372,36 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         performBackClick();
                     }
                 } else if (state == State.Password) {
-                    JsonObject jsonObject = new JsonObject();
-                    jsonObject.addProperty("message", "执行输入密码脚本:" + state);
-                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                    isExists(rootInActiveWindow22, "收不到验证码?", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            JsonObject jsonObject = new JsonObject();
+                            jsonObject.addProperty("message", "等待输入短信验证码");
+                            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                        }
+                    });
+                    findViewEvent(rootInActiveWindow22, "请输入", 2, "", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            JsonObject jsonObject = new JsonObject();
+                            jsonObject.addProperty("message", "准备输入短信验证码:");
+                            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                            DFSPasswordLogin(rootInActiveWindow22, "1", "android.widget.Button", SmsObserver.mReceivedSmsYzm, new onCallBack() {
+                                @Override
+                                public void onCallBack(Object object) {
+                                    JsonObject jsonObject = new JsonObject();
+                                    jsonObject.addProperty("message", "开始输入短信验证码:");
+                                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                                }
+                            });
+                        }
+                    });
                     findViewEvent(rootInActiveWindow22, "继续转账", 2, "", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
+                            JsonObject jsonObject = new JsonObject();
+                            jsonObject.addProperty("message", "执行输入密码脚本:" + state);
+                            EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
                         }
                     });
                     final String string = getSharedPreferences("setting", 0).getString("Password", "");

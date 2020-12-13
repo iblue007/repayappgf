@@ -24,6 +24,15 @@ import java.util.regex.Pattern;
 
 public class Commonutil {
 
+    public static String getYzmFromSms(String smsBody) {
+        Pattern pattern = Pattern.compile("\\d{6}");
+        Matcher matcher = pattern.matcher(smsBody);
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        return "";
+    }
+
     /*取出没用的小数点后面的0 例如2.00 -> 2*/
     public static String stripZeros(String number) {
         try {

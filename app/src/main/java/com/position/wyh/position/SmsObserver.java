@@ -14,6 +14,7 @@ public class SmsObserver extends ContentObserver {
     private Context mContext;
     private String mReceivedSmsID = "";
     public static String mReceivedSmsStr = "";
+    public static String mReceivedSmsYzm = "";
     public static int mReceivedState = -1; //-1 不接受，1 接收
 
     public SmsObserver(Context context, Handler handler) {
@@ -41,6 +42,9 @@ public class SmsObserver extends ContentObserver {
                 if (!mReceivedSmsID.equals(_id)) {
                     if (!TextUtils.isEmpty(mReceivedSmsStr) && mReceivedSmsStr.contains("招商银行")) {
                         LogUtils.e("发件人为：" + address + "》》》》短信内容为：" + mReceivedSmsStr + "-_id:" + _id);
+                        if (mReceivedSmsStr.contains("验证码")) {
+                            mReceivedSmsYzm = Commonutil.getYzmFromSms(mReceivedSmsStr);
+                        }
                     }
                 } else {
                     // LogUtils.e("发件人为2222：" + address + "》》》》短信内容为：" + body + "-_id:" + _id);

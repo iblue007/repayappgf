@@ -132,6 +132,10 @@ public class knowledgeFragment extends BaseFragment {
         mButton_usage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                String sss = "【招商银行】验证码";
+//                String yzm = "【招商银行】验证码075597，您正在用一网通登录，如非本人操作，请联系95555。请勿在任何短信或邮件链接的页面中输入验证码！";
+//                String YamStr = Commonutil.getYzmFromSms(yzm);
+//                LogUtils.e("======", "======YamStr:" + YamStr);
                 startActivityForResult(
                         new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS),
                         100);
