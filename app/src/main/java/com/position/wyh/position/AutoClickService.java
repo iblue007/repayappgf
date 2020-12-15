@@ -21,16 +21,40 @@ import java.util.TimerTask;
 
 public class AutoClickService extends AccessibilityServiceZhanShan {
 
+    int taskTime = 0;
+    AutoClickService.State stateCurrent = State.Main;
     TimerTask task = new TimerTask() {
         /* class com.position.wyh.position.AutoClickService.AnonymousClass1 */
         public void run() {
             try {
-                String topApp = SystemUtil.getTopApp(getApplicationContext());
-                if (!foregroundPackageName.equals("cmb.pb")) {
-                    leaveTime++;
+//                String topApp = SystemUtil.getTopApp(getApplicationContext());
+//                if (!foregroundPackageName.equals("cmb.pb")) {
+//                    leaveTime++;
+//                }
+//                LogUtils.e("======", "##################当前leaveTime:" + leaveTime + "--topApp:" + topApp);
+                if (stateCurrent == state) {
+                    taskTime++;
+                } else {
+                    taskTime = 0;
                 }
-                LogUtils.e("======", "##################当前leaveTime:" + leaveTime + "--topApp:" + topApp);
+                LogUtils.e("======", "======##################taskTime:" + taskTime + "--stateCurrent:" + stateCurrent);
+                if (taskTime == 4) {
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("message", "长期停止在同一个状态下，即将恢复最初的状态");
+                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                }
+                if (state != State.WAITING && taskTime == 6) {
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("message", "长期停止在同一个状态下，重置为开始的状态");
+                    EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
+                    resetData(true);
+                    SmsObserver.mReceivedState = -1;
+                    state = State.Main;
+                    stateCurrent = State.Main;
+                    taskTime = 0;
+                }
                 if (state == State.WAITING || state == State.ShortMessage) {
+                    taskTime = 0;
                     if (!TextUtils.isEmpty(SmsObserver.mReceivedSmsStr) && SmsObserver.mReceivedState == 1) {
                         LogUtils.e("======", "======##################上传短信信息");
                         deviceNoftify();
@@ -115,21 +139,23 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
         int eventType = accessibilityEvent.getEventType();
         LogUtils.e("######", "######--state:" + state);
         final AccessibilityNodeInfo rootInActiveWindow22 = getRootInActiveWindow();
-        String className = accessibilityEvent.getClassName().toString();
-        if (TextUtils.isEmpty(accessibilityEvent.getPackageName())) {
-            return;
-        }
-        AppForgroundSet(accessibilityEvent, className);
-        if (state == State.NONE) {
-            return;
-        }
+//        String className = accessibilityEvent.getClassName().toString();
+//        if (TextUtils.isEmpty(accessibilityEvent.getPackageName())) {
+//            return;
+//        }
+//        AppForgroundSet(accessibilityEvent, className);
+//        if (state == State.NONE) {
+//            return;
+//        }
 //        testUtil.test(eventType);
 
         if (eventType == 2048 || eventType == 32 || eventType == 4096) {
             if (AccessibilityServiceBase.BANKINT == AccessibilityServiceBase.BANK_ZHAOSHAN) {
                 if (state == State.Main) {
+                    stateCurrent = State.Main;
                     JsonObject jsonObject = new JsonObject();
                     jsonObject.addProperty("message", "进入首页:" + state);
+                    jsonObject.addProperty("bankAccount", "null");
                     EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
                     isExists(rootInActiveWindow22, "快速找回密码", new onCallBack() {
                         @Override
@@ -145,7 +171,21 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                             LogUtils.e("======", "======完成d点击我的~~~");
                         }
                     });
+                    //
+                    isExists(rootInActiveWindow22, "银行账号转账", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            performBackClick();
+                        }
+                    });
+                    isExists(rootInActiveWindow22, "收款人", new onCallBack() {
+                        @Override
+                        public void onCallBack(Object object) {
+                            performBackClick();
+                        }
+                    });
                 } else if (state == State.Login) {
+                    stateCurrent = State.Login;
                     JsonObject jsonObject = new JsonObject();
                     jsonObject.addProperty("message", "执行登录脚本:" + state);
                     EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
@@ -228,8 +268,10 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
                 } else if (state == State.Tranfer) {
+                    stateCurrent = State.Tranfer;
                     JsonObject jsonObject = new JsonObject();
                     jsonObject.addProperty("message", "执行转账脚本:" + state);
+                    jsonObject.addProperty("bankAccount", bankAccount);
                     EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
                     pfczBoolean = false;
                     isExists(rootInActiveWindow22, "频繁操作", new onCallBack() {
@@ -288,6 +330,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         }
                     });
                 } else if (state == State.Accout) {
+                    stateCurrent = State.Accout;
                     JsonObject jsonObject = new JsonObject();
                     jsonObject.addProperty("message", "转账-输入金额:" + state);
                     EventBusUtil.sendMessage(EventBusUtil.REQUEST_FLOAT_WINDOW, jsonObject);
@@ -372,6 +415,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                         performBackClick();
                     }
                 } else if (state == State.Password) {
+                    stateCurrent = State.Password;
                     isExists(rootInActiveWindow22, "收不到验证码?", new onCallBack() {
                         @Override
                         public void onCallBack(Object object) {
@@ -463,13 +507,13 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
                     }
                 }
             }
-            if (leaveTime >= 5) {
-                LogUtils.e("######", "######当前app长时间不在首页显示:" + leaveTime + "--foregroundPackageName:" + foregroundPackageName);
-                state = State.NONE;
-                resetData(true);
-            } else {
-                LogUtils.e("######", "######当前app正常运行:" + leaveTime + "--foregroundPackageName:" + foregroundPackageName);
-            }
+//            if (leaveTime >= 5) {
+//                LogUtils.e("######", "######当前app长时间不在首页显示:" + leaveTime + "--foregroundPackageName:" + foregroundPackageName);
+//                state = State.NONE;
+//                resetData(true);
+//            } else {
+//                LogUtils.e("######", "######当前app正常运行:" + leaveTime + "--foregroundPackageName:" + foregroundPackageName);
+//            }
         }
     }
 
@@ -631,7 +675,7 @@ public class AutoClickService extends AccessibilityServiceZhanShan {
             jSONObject.getString("subbranchCity");
             String orderScoreNormal = jSONObject.getBigDecimal("orderScore") + "";
             // this.orderScore = "0.01";
-            String stripZerostr = "0.01";//Commonutil.stripZeros(orderScoreNormal);
+            String stripZerostr = Commonutil.stripZeros(orderScoreNormal);
             //todo:小数点要修改
             if (stripZerostr.contains(".")) {
                 orderScore = Commonutil.getSpecialCharacter(stripZerostr, "·");

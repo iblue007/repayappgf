@@ -69,9 +69,9 @@ public class knowledgeFragment extends BaseFragment {
     void initView(View view) {
         mButton_start = view.findViewById(R.id.button_start);
         mButton_assit = view.findViewById(R.id.button_assit);
+        mButton_permission = view.findViewById(R.id.button_permission);
         mButton_float_window = view.findViewById(R.id.button_flaot_window);
         mButton_usage = view.findViewById(R.id.button_usage);
-        mButton_permission = view.findViewById(R.id.button_permission);
         mButton_order_get = view.findViewById(R.id.button_order_get);
         mButton_order_query = view.findViewById(R.id.button_order_query);
         mButton_order_complete = view.findViewById(R.id.button_order_complete);
@@ -85,12 +85,14 @@ public class knowledgeFragment extends BaseFragment {
             mButton_start.setText("开始自动化测试");
         }
 
-//        mButton_sign_type.setVisibility(View.GONE);
-//        mButton_order_get.setVisibility(View.GONE);
-//        mButton_order_query.setVisibility(View.GONE);
-//        mButton_order_complete.setVisibility(View.GONE);
-//        mButton_order_clear.setVisibility(View.GONE);
-//        mButton_order_save.setVisibility(View.GONE);
+        mButton_sign_type.setVisibility(View.GONE);
+        mButton_order_get.setVisibility(View.GONE);
+        mButton_order_query.setVisibility(View.GONE);
+        mButton_order_complete.setVisibility(View.GONE);
+        mButton_order_clear.setVisibility(View.GONE);
+        mButton_order_save.setVisibility(View.GONE);
+        mButton_usage.setVisibility(View.GONE);
+        mButton_process_exist.setVisibility(View.GONE);
 
         mButton_permission.setOnClickListener(new View.OnClickListener() {
             @Override

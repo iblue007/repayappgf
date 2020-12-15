@@ -79,6 +79,7 @@ public class MainActivity extends FragmentActivity {
     private static String TAG = "MainActivity";
     private boolean showFloatWindow = false;
     private HomeTitleBarAdapter homeTitleBarAdapter = null;
+    private TextView floatTitle;
     private RecyclerView recyclerViewMessgeList;
     private List<String> messageList = new ArrayList<>();
 
@@ -94,7 +95,7 @@ public class MainActivity extends FragmentActivity {
         SmsObserver mObserver = new SmsObserver(this, new Handler());
         Uri uri = Uri.parse("content://sms");
         getContentResolver().registerContentObserver(uri, true, mObserver);
-        requestPermissions(this, new String[]{Manifest.permission.READ_SMS, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.WRITE_EXTERNAL_STORAGE}, null);
+        // requestPermissions(this, new String[]{Manifest.permission.READ_SMS, Manifest.permission.SYSTEM_ALERT_WINDOW, Manifest.permission.WRITE_EXTERNAL_STORAGE}, null);
         Global.setContext(this);
         Global.setHandler(new Handler());
         EventBus.getDefault().register(this);
@@ -105,6 +106,7 @@ public class MainActivity extends FragmentActivity {
         View view = View.inflate(this, R.layout.dialog_float_window, null);
         //LinearLayout LogMessageLL = view.findViewById(R.id.log_message_ll);
         recyclerViewMessgeList = view.findViewById(R.id.log_message_rv);
+        floatTitle = view.findViewById(R.id.float_title);
         recyclerViewMessgeList.setLayoutManager(new WrapWrongLinearLayoutManger(this));
         homeTitleBarAdapter = new HomeTitleBarAdapter(null);
         recyclerViewMessgeList.setAdapter(homeTitleBarAdapter);
@@ -147,10 +149,10 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (Commonutil.isAccessibilitySettingsOn(this) && !showFloatWindow) {
-            showFloatWindow = true;
-            FloatWindow.get().show();
-        }
+//        if (Commonutil.isAccessibilitySettingsOn(this) && !showFloatWindow) {
+//            showFloatWindow = true;
+//            FloatWindow.get().show();
+//        }
     }
 
     private void initViews() {
@@ -298,7 +300,15 @@ public class MainActivity extends FragmentActivity {
                 int actionType = jsonObject.optInt("actionType");
                 if (actionType == EventBusUtil.REQUEST_FLOAT_WINDOW) {
                     String messageStr = jsonObject.optString("message");
+                    String bankAccount = jsonObject.optString("bankAccount");
                     if (!TextUtils.isEmpty(messageStr)) {
+                        if (floatTitle != null && !TextUtils.isEmpty(bankAccount)) {
+                            if ("null".equals(bankAccount)) {
+                                floatTitle.setText("日志信息：");
+                            } else {
+                                floatTitle.setText("当前转账给：" + bankAccount);
+                            }
+                        }
                         if (homeTitleBarAdapter != null) {
                             messageList.add(messageStr);
                             homeTitleBarAdapter.setNewData(messageList);
